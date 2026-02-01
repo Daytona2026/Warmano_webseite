@@ -101,8 +101,8 @@ export default function BookingWidget() {
     : Math.round((selectedPackage?.price || 0) / 12)
 
   // Validation helpers
-  const isStep1Valid = formData.brand !== ''
-  const isStep2Valid = /^\d{5}$/.test(formData.plz) && formData.city !== '' && formData.street !== '' && formData.firstName !== '' && formData.lastName !== '' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) && formData.phone.length >= 6
+  const isStep1Valid = formData.package !== '' // Package is always selected
+  const isStep2Valid = formData.brand !== '' && /^\d{5}$/.test(formData.plz) && formData.city !== '' && formData.street !== '' && formData.firstName !== '' && formData.lastName !== '' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) && formData.phone.length >= 6
   const isStep3Valid = formData.agbAccepted
 
   // Handle form submission
@@ -534,7 +534,7 @@ export default function BookingWidget() {
                     </div>
 
                     {/* Payment Frequency */}
-                    <div className="mb-6">
+                    <div className="mb-8">
                       <label className="block text-sm font-semibold text-warmano-gray-300 mb-3">
                         Zahlweise
                       </label>
@@ -562,40 +562,12 @@ export default function BookingWidget() {
                       </div>
                     </div>
 
-                    {/* Brand Selection */}
-                    <div className="mb-8">
-                      <label className="block text-sm font-semibold text-warmano-gray-300 mb-4">
-                        Welche Marke hat Ihre Wärmepumpe?
-                      </label>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                        {deviceBrands.map((brand) => {
-                          const isSelected = formData.brand === brand.name
-                          return (
-                            <motion.button
-                              key={brand.name}
-                              onClick={() => updateForm('brand', brand.name)}
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              className={`relative px-4 py-3.5 rounded-xl text-sm font-medium transition-all duration-300 flex flex-col items-center gap-1.5 ${
-                                isSelected
-                                  ? 'bg-gradient-to-r from-warmano-orange to-amber-500 text-white shadow-lg shadow-warmano-orange/30'
-                                  : 'bg-warmano-gray-800/50 text-warmano-gray-300 hover:bg-warmano-gray-700/50 hover:text-white border border-warmano-gray-700/50'
-                              }`}
-                            >
-                              <span className="text-lg">{brand.icon}</span>
-                              <span className="text-xs">{brand.name}</span>
-                            </motion.button>
-                          )
-                        })}
-                      </div>
-                    </div>
-
                     <Button
                       onClick={nextStep}
                       disabled={!isStep1Valid}
                       className="w-full text-base py-4 shadow-glow-orange hover:shadow-glow-orange-lg transition-shadow"
                     >
-                      Weiter zur Adresse
+                      Weiter zu den Vertragsdaten
                       <ChevronRight className="w-5 h-5 ml-2" />
                     </Button>
                   </motion.div>
@@ -615,6 +587,34 @@ export default function BookingWidget() {
                       <span className="w-8 h-8 rounded-lg bg-warmano-orange/20 flex items-center justify-center text-warmano-orange text-sm font-bold">2</span>
                       Ihre Vertragsdaten
                     </h3>
+
+                    {/* Brand Selection */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-semibold text-warmano-gray-300 mb-3">
+                        Welche Marke hat Ihre Wärmepumpe?
+                      </label>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        {deviceBrands.map((brand) => {
+                          const isSelected = formData.brand === brand.name
+                          return (
+                            <motion.button
+                              key={brand.name}
+                              onClick={() => updateForm('brand', brand.name)}
+                              whileHover={{ scale: 1.03 }}
+                              whileTap={{ scale: 0.97 }}
+                              className={`relative px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 flex flex-col items-center gap-1 ${
+                                isSelected
+                                  ? 'bg-gradient-to-r from-warmano-orange to-amber-500 text-white shadow-lg shadow-warmano-orange/30'
+                                  : 'bg-warmano-gray-800/50 text-warmano-gray-300 hover:bg-warmano-gray-700/50 hover:text-white border border-warmano-gray-700/50'
+                              }`}
+                            >
+                              <span className="text-base">{brand.icon}</span>
+                              <span className="text-xs">{brand.name}</span>
+                            </motion.button>
+                          )
+                        })}
+                      </div>
+                    </div>
 
                     {/* Address Section */}
                     <div className="mb-6">
