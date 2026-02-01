@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "regions": ["fra1"],
+  "env": {
+    "ODOO_URL": "@odoo_url",
+    "ODOO_DB": "@odoo_db",
+    "ODOO_USERNAME": "@odoo_username",
+    "ODOO_API_KEY": "@odoo_api_key"
+  }
+}
