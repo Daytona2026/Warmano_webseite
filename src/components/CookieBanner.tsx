@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Cookie, X, Settings, Check } from 'lucide-react'
-import { Link } from '@/i18n/routing'
+import Link from 'next/link'
 
 type CookieConsent = {
   necessary: boolean
