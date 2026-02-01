@@ -836,7 +836,7 @@ export default function BookingWidget() {
                         </div>
                         <div className="bg-warmano-black/30 rounded-lg p-3">
                           <span className="text-warmano-gray-400 text-xs">Adresse</span>
-                          <p className="text-warmano-white font-semibold">{formData.plz} {formData.city}</p>
+                          <p className="text-warmano-white font-semibold text-xs">{formData.street}, {formData.plz} {formData.city}</p>
                         </div>
                       </div>
                       {is3Years && (
