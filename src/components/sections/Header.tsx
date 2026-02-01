@@ -11,8 +11,9 @@ import { cn } from '@/lib/utils'
 const navigation = [
   { name: 'So funktioniert\'s', href: 'services' },
   { name: 'Preise', href: 'pricing' },
-  { name: 'Bewertungen', href: 'testimonials' },
+  { name: 'Empfehlen', href: 'referral' },
   { name: 'FAQ', href: 'faq' },
+  { name: 'Kontakt', href: 'contact' },
 ]
 
 export default function Header() {

@@ -78,7 +78,7 @@ function MunichSkyline() {
 
 export default function Footer() {
   return (
-    <footer className="relative bg-warmano-black border-t border-warmano-gray-800 overflow-hidden">
+    <footer id="contact" className="relative bg-warmano-black border-t border-warmano-gray-800 overflow-hidden">
       {/* Munich Skyline Background */}
       <MunichSkyline />
 
