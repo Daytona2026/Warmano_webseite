@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(export PATH=\"/usr/local/bin:/opt/homebrew/bin:$PATH\")",
+      "Bash(npx create-next-app:*)",
+      "Bash(source ~/.zshrc)",
+      "Bash(source ~/.bashrc)",
+      "Bash(/Applications/Cursor.app/Contents/Resources/app/resources/helpers/node:*)",
+      "Bash(NODE_PATH=\"/Applications/Cursor.app/Contents/Resources/app/resources/helpers\":*)",
+      "Bash($NODE_PATH/node $NODE_PATH/../../../app.asar.unpacked/node_modules/npm/bin/npx-cli.js create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm --no-git)",
+      "Bash(open \"https://nodejs.org/en/download/\")",
+      "Bash(/usr/local/bin/npm install)",
+      "Bash(/opt/homebrew/bin/npm install)",
+      "Bash(npm install:*)",
+      "Bash(open \"http://localhost:3000\")",
+      "Bash(npm run build:*)",
+      "Bash(npm run dev)",
+      "Bash(curl:*)"
+    ]
+  }
+}
