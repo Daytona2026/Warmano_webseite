@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, Phone, Gift, Sparkles, ArrowRight } from 'lucide-react'
+import { Menu, X, Phone, Gift, Sparkles, ArrowRight, LogIn } from 'lucide-react'
 import Link from 'next/link'
 import Container from '@/components/ui/Container'
 import Button from '@/components/ui/Button'
@@ -147,6 +147,15 @@ export default function Header() {
               <Phone className="w-4 h-4" />
               <span>089 99 95 14-133</span>
             </a>
+            <a
+              href="https://warmano.odoo.com/web/login"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-sm font-medium text-warmano-gray-400 hover:text-warmano-orange transition-colors"
+            >
+              <LogIn className="w-4 h-4" />
+              <span>Login</span>
+            </a>
             <Button size="sm" onClick={scrollToBooking} className="shadow-glow-orange hover:shadow-glow-orange-lg transition-shadow">
               Jetzt buchen
             </Button>
@@ -190,6 +199,15 @@ export default function Header() {
                 >
                   <Phone className="w-5 h-5" />
                   089 99 95 14-133
+                </a>
+                <a
+                  href="https://warmano.odoo.com/web/login"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 py-3 text-warmano-gray-400 hover:text-warmano-orange transition-colors"
+                >
+                  <LogIn className="w-5 h-5" />
+                  Kundenportal Login
                 </a>
                 <Button className="mt-2 shadow-glow-orange" onClick={scrollToBooking}>
                   Jetzt buchen
