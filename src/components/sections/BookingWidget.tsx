@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { motion, AnimatePresence, useInView } from 'framer-motion'
-import { Check, ChevronRight, ChevronLeft, MapPin, Calendar, Shield, Clock, CreditCard, Star, Zap, Award, Sparkles, Loader2, Gift, CheckCircle2 } from 'lucide-react'
+import { Check, ChevronRight, ChevronLeft, MapPin, Calendar, Shield, Clock, CreditCard, Star, Award, Sparkles, Loader2, Gift, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 import Container from '@/components/ui/Container'
 import Button from '@/components/ui/Button'
@@ -53,46 +53,15 @@ const packages = [
 
 const stepLabels = [
   { label: 'Paket', icon: Sparkles },
-  { label: 'Adresse', icon: MapPin },
-  { label: 'Termin', icon: Calendar },
+  { label: 'Vertragsdaten', icon: MapPin },
   { label: 'Abschluss', icon: Check },
 ]
-
-// Generate next available dates (excluding weekends)
-function getAvailableDates(): { date: string; dateValue: string; slots: string[] }[] {
-  const dates: { date: string; dateValue: string; slots: string[] }[] = []
-  const today = new Date()
-  let daysAdded = 0
-  let currentDate = new Date(today)
-  currentDate.setDate(currentDate.getDate() + 5) // Start 5 days from now
-
-  while (daysAdded < 5) {
-    const dayOfWeek = currentDate.getDay()
-    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-      // Skip weekends
-      const dayNames = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa']
-      const day = dayNames[dayOfWeek]
-      const dateStr = currentDate.toLocaleDateString('de-DE', { day: '2-digit', month: 'short' })
-      const dateValue = currentDate.toISOString().split('T')[0]
-
-      dates.push({
-        date: `${day}, ${dateStr}`,
-        dateValue,
-        slots: dayOfWeek === 4 ? ['09:00-12:00'] : ['09:00-12:00', '13:00-16:00'], // Thursday only morning
-      })
-      daysAdded++
-    }
-    currentDate.setDate(currentDate.getDate() + 1)
-  }
-  return dates
-}
 
 export default function BookingWidget() {
   const [step, setStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [signUrl, setSignUrl] = useState<string | null>(null)
-  const [appointmentUrl, setAppointmentUrl] = useState<string | null>(null)
   const [portalUrl, setPortalUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
@@ -103,9 +72,6 @@ export default function BookingWidget() {
     plz: '',
     city: '',
     street: '',
-    date: '',
-    dateValue: '',
-    time: '',
     firstName: '',
     lastName: '',
     email: '',
@@ -115,9 +81,8 @@ export default function BookingWidget() {
 
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, margin: '-100px' })
-  const timeSlots = getAvailableDates()
 
-  const totalSteps = 4
+  const totalSteps = 3
 
   const updateForm = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -137,13 +102,12 @@ export default function BookingWidget() {
 
   // Validation helpers
   const isStep1Valid = formData.brand !== ''
-  const isStep2Valid = /^\d{5}$/.test(formData.plz) && formData.city !== '' && formData.street !== ''
-  const isStep3Valid = formData.date !== '' && formData.time !== ''
-  const isStep4Valid = formData.firstName !== '' && formData.lastName !== '' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) && formData.phone.length >= 6 && formData.agbAccepted
+  const isStep2Valid = /^\d{5}$/.test(formData.plz) && formData.city !== '' && formData.street !== '' && formData.firstName !== '' && formData.lastName !== '' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) && formData.phone.length >= 6
+  const isStep3Valid = formData.agbAccepted
 
   // Handle form submission
   const handleSubmit = async () => {
-    if (!isStep4Valid) return
+    if (!isStep3Valid) return
 
     setIsSubmitting(true)
     setError(null)
@@ -166,8 +130,6 @@ export default function BookingWidget() {
           contractDuration: formData.contractDuration,
           paymentFrequency: formData.paymentFrequency,
           manufacturer: formData.brand,
-          preferredDate: formData.dateValue,
-          message: `Termin: ${formData.date}, ${formData.time}`,
         }),
       })
 
@@ -177,9 +139,6 @@ export default function BookingWidget() {
         setIsSuccess(true)
         if (result.signUrl) {
           setSignUrl(result.signUrl)
-        }
-        if (result.appointmentUrl) {
-          setAppointmentUrl(result.appointmentUrl)
         }
         if (result.portalUrl) {
           setPortalUrl(result.portalUrl)
@@ -221,17 +180,17 @@ export default function BookingWidget() {
             </motion.div>
 
             <h2 className="text-3xl font-bold text-warmano-white mb-4">
-              {signUrl ? 'Fast geschafft!' : 'Buchung erfolgreich!'}
+              {signUrl ? 'Fast geschafft!' : 'Vielen Dank!'}
             </h2>
             <p className="text-lg text-warmano-gray-400 mb-8">
               {signUrl
-                ? 'Bitte unterschreiben Sie jetzt Ihren Wartungsvertrag digital. Danach können Sie Ihren Termin buchen.'
-                : 'Vielen Dank für Ihre Buchung. Sie können jetzt Ihren Wartungstermin auswählen.'
+                ? 'Bitte unterschreiben Sie jetzt Ihren Wartungsvertrag digital. Danach erhalten Sie Zugang zum Kundenportal.'
+                : 'Ihr Vertrag wurde erfolgreich erstellt. Sie erhalten in Kürze eine E-Mail mit Ihren Zugangsdaten.'
               }
             </p>
 
             <div className="bg-warmano-gray-800/50 border border-warmano-gray-700/50 rounded-2xl p-6 mb-8 text-left">
-              <h3 className="font-semibold text-warmano-white mb-4">Ihre Buchungsdetails:</h3>
+              <h3 className="font-semibold text-warmano-white mb-4">Ihre Vertragsdetails:</h3>
               <div className="space-y-2 text-sm">
                 <p className="flex justify-between">
                   <span className="text-warmano-gray-400">Paket:</span>
@@ -242,8 +201,8 @@ export default function BookingWidget() {
                   <span className="text-warmano-white font-medium">{is3Years ? '3 Jahre' : '1 Jahr'}</span>
                 </p>
                 <p className="flex justify-between">
-                  <span className="text-warmano-gray-400">Wunschtermin:</span>
-                  <span className="text-warmano-white font-medium">{formData.date}, {formData.time}</span>
+                  <span className="text-warmano-gray-400">Adresse:</span>
+                  <span className="text-warmano-white font-medium">{formData.street}, {formData.plz} {formData.city}</span>
                 </p>
                 <p className="flex justify-between">
                   <span className="text-warmano-gray-400">Preis:</span>
@@ -258,103 +217,85 @@ export default function BookingWidget() {
               )}
             </div>
 
-            {/* Action Buttons - Sign first, then Appointment */}
+            {/* Action Buttons - Sign first, then Portal */}
             <div className="space-y-4">
-              {signUrl ? (
-                <>
-                  {/* Step 1: Sign Contract */}
-                  <motion.a
-                    href={signUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="flex items-center justify-center gap-3 w-full px-6 py-4 bg-gradient-to-r from-warmano-orange to-amber-500 text-white font-bold rounded-xl shadow-lg shadow-warmano-orange/30 hover:shadow-xl hover:shadow-warmano-orange/40 transition-all"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                    </svg>
-                    Vertrag digital unterschreiben
-                  </motion.a>
-
-                  {/* Step 2: Book Appointment (secondary, shown after signing info) */}
-                  {appointmentUrl && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.5 }}
-                      className="text-center"
-                    >
-                      <p className="text-sm text-warmano-gray-500 mb-3">
-                        Nach der Unterschrift:
-                      </p>
-                      <a
-                        href={appointmentUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-warmano-gray-800 border border-warmano-gray-700 text-warmano-white font-medium rounded-xl hover:bg-warmano-gray-700 transition-colors"
-                      >
-                        <Calendar className="w-5 h-5" />
-                        Wartungstermin buchen
-                      </a>
-                    </motion.div>
-                  )}
-                </>
-              ) : (
-                /* No Sign URL - go directly to appointment */
-                appointmentUrl && (
-                  <motion.a
-                    href={appointmentUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="flex items-center justify-center gap-3 w-full px-6 py-4 bg-gradient-to-r from-warmano-orange to-amber-500 text-white font-bold rounded-xl shadow-lg shadow-warmano-orange/30 hover:shadow-xl hover:shadow-warmano-orange/40 transition-all"
-                  >
-                    <Calendar className="w-5 h-5" />
-                    Jetzt Wartungstermin buchen
-                  </motion.a>
-                )
+              {signUrl && (
+                <motion.a
+                  href={signUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="flex items-center justify-center gap-3 w-full px-6 py-4 bg-gradient-to-r from-warmano-orange to-amber-500 text-white font-bold rounded-xl shadow-lg shadow-warmano-orange/30 hover:shadow-xl hover:shadow-warmano-orange/40 transition-all"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                  Vertrag digital unterschreiben
+                </motion.a>
               )}
             </div>
 
-            {/* Portal Access Info */}
-            {portalUrl && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.7 }}
-                className="mt-6 p-4 bg-warmano-gray-800/50 border border-warmano-gray-700/50 rounded-xl"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                    <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-warmano-white text-sm">Ihr Kundenportal</h4>
-                    <p className="text-xs text-warmano-gray-400 mt-1">
-                      Sie erhalten in Kürze eine E-Mail mit Ihren Zugangsdaten zum Kundenportal.
-                      Dort können Sie Ihre Verträge, Termine und Rechnungen einsehen.
-                    </p>
+            {/* Portal Access Info - Primary CTA after signing */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: signUrl ? 0.5 : 0.3 }}
+              className="mt-6 p-5 bg-gradient-to-br from-blue-500/20 to-indigo-500/10 border border-blue-500/30 rounded-xl"
+            >
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-xl bg-blue-500/30 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-bold text-warmano-white mb-2">Ihr Kundenportal</h4>
+                  <p className="text-sm text-warmano-gray-400 mb-3">
+                    {signUrl
+                      ? 'Nach der Unterschrift erhalten Sie Ihre Zugangsdaten per E-Mail. Im Portal können Sie:'
+                      : 'Sie erhalten Ihre Zugangsdaten per E-Mail. Im Portal können Sie:'
+                    }
+                  </p>
+                  <ul className="space-y-2 text-sm text-warmano-gray-300">
+                    <li className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-blue-400" />
+                      Wartungstermin buchen
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                      </svg>
+                      Support-Ticket erstellen
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      Verträge & Rechnungen einsehen
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Gift className="w-4 h-4 text-blue-400" />
+                      Freunde werben & Prämien erhalten
+                    </li>
+                  </ul>
+                  {portalUrl && (
                     <a
                       href={portalUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 mt-2"
+                      className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 text-blue-400 font-medium rounded-lg transition-colors"
                     >
                       Zum Kundenportal
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                       </svg>
                     </a>
-                  </div>
+                  )}
                 </div>
-              </motion.div>
-            )}
+              </div>
+            </motion.div>
 
             <p className="text-sm text-warmano-gray-500 mt-6">
               Eine Bestätigung wurde an <span className="text-warmano-white">{formData.email}</span> gesendet.
@@ -397,7 +338,7 @@ export default function BookingWidget() {
             </span>
           </h2>
           <p className="text-lg text-warmano-gray-400">
-            In 2 Minuten zum Wartungstermin. Einfach, schnell, verbindlich.
+            In 3 Schritten zum Wartungsvertrag. Einfach, schnell, verbindlich.
           </p>
         </motion.div>
 
@@ -660,7 +601,7 @@ export default function BookingWidget() {
                   </motion.div>
                 )}
 
-                {/* Step 2: Address */}
+                {/* Step 2: Address + Contact */}
                 {step === 2 && (
                   <motion.div
                     key="step2"
@@ -672,43 +613,85 @@ export default function BookingWidget() {
                   >
                     <h3 className="text-xl font-bold text-warmano-white mb-6 flex items-center gap-2">
                       <span className="w-8 h-8 rounded-lg bg-warmano-orange/20 flex items-center justify-center text-warmano-orange text-sm font-bold">2</span>
-                      Wo befindet sich Ihre Wärmepumpe?
+                      Ihre Vertragsdaten
                     </h3>
 
-                    <div className="space-y-4 mb-6">
-                      <div className="grid grid-cols-3 gap-3">
+                    {/* Address Section */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-semibold text-warmano-gray-300 mb-3">
+                        Adresse der Wärmepumpe
+                      </label>
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-3 gap-3">
+                          <input
+                            type="text"
+                            placeholder="PLZ *"
+                            value={formData.plz}
+                            onChange={(e) => updateForm('plz', e.target.value)}
+                            className="input-field bg-warmano-gray-800/50 border-warmano-gray-700/50"
+                            maxLength={5}
+                          />
+                          <input
+                            type="text"
+                            placeholder="Stadt *"
+                            value={formData.city}
+                            onChange={(e) => updateForm('city', e.target.value)}
+                            className="input-field col-span-2 bg-warmano-gray-800/50 border-warmano-gray-700/50"
+                          />
+                        </div>
                         <input
                           type="text"
-                          placeholder="PLZ *"
-                          value={formData.plz}
-                          onChange={(e) => updateForm('plz', e.target.value)}
+                          placeholder="Straße und Hausnummer *"
+                          value={formData.street}
+                          onChange={(e) => updateForm('street', e.target.value)}
                           className="input-field bg-warmano-gray-800/50 border-warmano-gray-700/50"
-                          maxLength={5}
-                        />
-                        <input
-                          type="text"
-                          placeholder="Stadt *"
-                          value={formData.city}
-                          onChange={(e) => updateForm('city', e.target.value)}
-                          className="input-field col-span-2 bg-warmano-gray-800/50 border-warmano-gray-700/50"
                         />
                       </div>
-                      <input
-                        type="text"
-                        placeholder="Straße und Hausnummer *"
-                        value={formData.street}
-                        onChange={(e) => updateForm('street', e.target.value)}
-                        className="input-field bg-warmano-gray-800/50 border-warmano-gray-700/50"
-                      />
                     </div>
 
-                    <div className="p-4 bg-warmano-orange/10 border border-warmano-orange/20 rounded-xl mb-6 flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-warmano-orange/20 flex items-center justify-center flex-shrink-0">
-                        <MapPin className="w-5 h-5 text-warmano-orange" />
-                      </div>
-                      <div className="text-sm">
-                        <p className="text-warmano-white font-semibold">Service-Gebiet</p>
-                        <p className="text-warmano-gray-400">München und Umgebung (50km Radius)</p>
+                    <div className="p-3 bg-warmano-orange/10 border border-warmano-orange/20 rounded-xl mb-6 flex items-center gap-3">
+                      <MapPin className="w-5 h-5 text-warmano-orange flex-shrink-0" />
+                      <p className="text-sm text-warmano-gray-400">
+                        <span className="text-warmano-white font-medium">Service-Gebiet:</span> München und Umgebung (50km Radius)
+                      </p>
+                    </div>
+
+                    {/* Contact Section */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-semibold text-warmano-gray-300 mb-3">
+                        Kontaktdaten
+                      </label>
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          <input
+                            type="text"
+                            placeholder="Vorname *"
+                            value={formData.firstName}
+                            onChange={(e) => updateForm('firstName', e.target.value)}
+                            className="input-field bg-warmano-gray-800/50 border-warmano-gray-700/50"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Nachname *"
+                            value={formData.lastName}
+                            onChange={(e) => updateForm('lastName', e.target.value)}
+                            className="input-field bg-warmano-gray-800/50 border-warmano-gray-700/50"
+                          />
+                        </div>
+                        <input
+                          type="email"
+                          placeholder="E-Mail-Adresse *"
+                          value={formData.email}
+                          onChange={(e) => updateForm('email', e.target.value)}
+                          className="input-field bg-warmano-gray-800/50 border-warmano-gray-700/50"
+                        />
+                        <input
+                          type="tel"
+                          placeholder="Telefon *"
+                          value={formData.phone}
+                          onChange={(e) => updateForm('phone', e.target.value)}
+                          className="input-field bg-warmano-gray-800/50 border-warmano-gray-700/50"
+                        />
                       </div>
                     </div>
 
@@ -722,14 +705,14 @@ export default function BookingWidget() {
                         disabled={!isStep2Valid}
                         className="flex-1 py-4 shadow-glow-orange hover:shadow-glow-orange-lg transition-shadow"
                       >
-                        Weiter zum Termin
+                        Weiter zum Abschluss
                         <ChevronRight className="w-5 h-5 ml-2" />
                       </Button>
                     </div>
                   </motion.div>
                 )}
 
-                {/* Step 3: Date/Time */}
+                {/* Step 3: Summary & Signature */}
                 {step === 3 && (
                   <motion.div
                     key="step3"
@@ -741,72 +724,7 @@ export default function BookingWidget() {
                   >
                     <h3 className="text-xl font-bold text-warmano-white mb-6 flex items-center gap-2">
                       <span className="w-8 h-8 rounded-lg bg-warmano-orange/20 flex items-center justify-center text-warmano-orange text-sm font-bold">3</span>
-                      Wann passt es Ihnen?
-                    </h3>
-
-                    <div className="space-y-3 mb-6">
-                      {timeSlots.map((day) => (
-                        <div key={day.date} className="flex flex-col sm:flex-row sm:items-center gap-2">
-                          <span className="text-warmano-gray-400 text-sm font-medium w-28 flex-shrink-0">{day.date}</span>
-                          <div className="flex gap-2 flex-1">
-                            {day.slots.map((slot) => {
-                              const isSelected = formData.date === day.date && formData.time === slot
-                              return (
-                                <motion.button
-                                  key={`${day.date}-${slot}`}
-                                  onClick={() => {
-                                    updateForm('date', day.date)
-                                    updateForm('dateValue', day.dateValue)
-                                    updateForm('time', slot)
-                                  }}
-                                  whileHover={{ scale: 1.05 }}
-                                  whileTap={{ scale: 0.95 }}
-                                  className={`flex-1 px-4 py-3.5 rounded-xl text-sm font-medium transition-all duration-300 ${
-                                    isSelected
-                                      ? 'bg-gradient-to-r from-warmano-orange to-amber-500 text-white shadow-lg shadow-warmano-orange/30'
-                                      : 'bg-warmano-gray-800/50 text-warmano-gray-300 hover:bg-warmano-gray-700/50 border border-warmano-gray-700/50'
-                                  }`}
-                                >
-                                  <Clock className={`w-4 h-4 mx-auto mb-1 ${isSelected ? 'text-white' : 'text-warmano-gray-500'}`} />
-                                  {slot}
-                                </motion.button>
-                              )
-                            })}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="flex gap-3">
-                      <Button variant="secondary" onClick={prevStep} className="px-6">
-                        <ChevronLeft className="w-4 h-4 mr-1" />
-                        Zurück
-                      </Button>
-                      <Button
-                        onClick={nextStep}
-                        disabled={!isStep3Valid}
-                        className="flex-1 py-4 shadow-glow-orange hover:shadow-glow-orange-lg transition-shadow"
-                      >
-                        Weiter zum Abschluss
-                        <ChevronRight className="w-5 h-5 ml-2" />
-                      </Button>
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* Step 4: Contact & Summary */}
-                {step === 4 && (
-                  <motion.div
-                    key="step4"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.3 }}
-                    className="relative z-10"
-                  >
-                    <h3 className="text-xl font-bold text-warmano-white mb-6 flex items-center gap-2">
-                      <span className="w-8 h-8 rounded-lg bg-warmano-orange/20 flex items-center justify-center text-warmano-orange text-sm font-bold">4</span>
-                      Ihre Kontaktdaten
+                      Vertragsabschluss
                     </h3>
 
                     {/* Summary Card */}
@@ -819,24 +737,34 @@ export default function BookingWidget() {
                         <div className="w-8 h-8 rounded-lg bg-warmano-orange flex items-center justify-center">
                           <Check className="w-5 h-5 text-white" />
                         </div>
-                        <h4 className="font-bold text-warmano-white">Ihre Buchungsübersicht</h4>
+                        <h4 className="font-bold text-warmano-white">Ihre Vertragsübersicht</h4>
                       </div>
-                      <div className="grid grid-cols-2 gap-3 text-sm">
-                        <div className="bg-warmano-black/30 rounded-lg p-3">
-                          <span className="text-warmano-gray-400 text-xs">Paket</span>
-                          <p className="text-warmano-white font-semibold">{selectedPackage?.name}</p>
-                        </div>
-                        <div className="bg-warmano-black/30 rounded-lg p-3">
-                          <span className="text-warmano-gray-400 text-xs">Preis</span>
-                          <p className="text-warmano-orange font-semibold">{displayPrice}€ {is3Years ? '/ 3 Jahre' : '/ Jahr'}</p>
-                        </div>
-                        <div className="bg-warmano-black/30 rounded-lg p-3">
-                          <span className="text-warmano-gray-400 text-xs">Termin</span>
-                          <p className="text-warmano-white font-semibold">{formData.date}, {formData.time}</p>
+                      <div className="space-y-3 text-sm">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="bg-warmano-black/30 rounded-lg p-3">
+                            <span className="text-warmano-gray-400 text-xs">Paket</span>
+                            <p className="text-warmano-white font-semibold">{selectedPackage?.name}</p>
+                          </div>
+                          <div className="bg-warmano-black/30 rounded-lg p-3">
+                            <span className="text-warmano-gray-400 text-xs">Laufzeit</span>
+                            <p className="text-warmano-white font-semibold">{is3Years ? '3 Jahre' : '1 Jahr'}</p>
+                          </div>
                         </div>
                         <div className="bg-warmano-black/30 rounded-lg p-3">
                           <span className="text-warmano-gray-400 text-xs">Adresse</span>
-                          <p className="text-warmano-white font-semibold text-xs">{formData.street}, {formData.plz} {formData.city}</p>
+                          <p className="text-warmano-white font-semibold">{formData.street}, {formData.plz} {formData.city}</p>
+                        </div>
+                        <div className="bg-warmano-black/30 rounded-lg p-3">
+                          <span className="text-warmano-gray-400 text-xs">Kontakt</span>
+                          <p className="text-warmano-white font-semibold">{formData.firstName} {formData.lastName}</p>
+                          <p className="text-warmano-gray-400 text-xs">{formData.email} | {formData.phone}</p>
+                        </div>
+                        <div className="bg-warmano-black/30 rounded-lg p-3">
+                          <span className="text-warmano-gray-400 text-xs">Preis</span>
+                          <p className="text-warmano-orange font-bold text-lg">{displayPrice}€ {is3Years ? '/ 3 Jahre' : '/ Jahr'}</p>
+                          {formData.paymentFrequency === 'monthly' && (
+                            <p className="text-warmano-gray-400 text-xs">oder {monthlyPrice}€ / Monat</p>
+                          )}
                         </div>
                       </div>
                       {is3Years && (
@@ -847,37 +775,23 @@ export default function BookingWidget() {
                       )}
                     </motion.div>
 
-                    <div className="space-y-4 mb-6">
-                      <div className="grid grid-cols-2 gap-3">
-                        <input
-                          type="text"
-                          placeholder="Vorname *"
-                          value={formData.firstName}
-                          onChange={(e) => updateForm('firstName', e.target.value)}
-                          className="input-field bg-warmano-gray-800/50 border-warmano-gray-700/50"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Nachname *"
-                          value={formData.lastName}
-                          onChange={(e) => updateForm('lastName', e.target.value)}
-                          className="input-field bg-warmano-gray-800/50 border-warmano-gray-700/50"
-                        />
-                      </div>
-                      <input
-                        type="email"
-                        placeholder="E-Mail-Adresse *"
-                        value={formData.email}
-                        onChange={(e) => updateForm('email', e.target.value)}
-                        className="input-field bg-warmano-gray-800/50 border-warmano-gray-700/50"
-                      />
-                      <input
-                        type="tel"
-                        placeholder="Telefon * (für Terminbestätigung)"
-                        value={formData.phone}
-                        onChange={(e) => updateForm('phone', e.target.value)}
-                        className="input-field bg-warmano-gray-800/50 border-warmano-gray-700/50"
-                      />
+                    {/* Info about next steps */}
+                    <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl mb-6">
+                      <h4 className="font-semibold text-warmano-white text-sm mb-2">Nächste Schritte nach der Buchung:</h4>
+                      <ul className="space-y-1.5 text-sm text-warmano-gray-400">
+                        <li className="flex items-start gap-2">
+                          <span className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 text-xs text-blue-400 mt-0.5">1</span>
+                          Vertrag digital unterschreiben
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 text-xs text-blue-400 mt-0.5">2</span>
+                          Zugangsdaten zum Kundenportal erhalten
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 text-xs text-blue-400 mt-0.5">3</span>
+                          Wartungstermin im Portal buchen
+                        </li>
+                      </ul>
                     </div>
 
                     {error && (
@@ -917,7 +831,7 @@ export default function BookingWidget() {
                       </Button>
                       <Button
                         onClick={handleSubmit}
-                        disabled={!isStep4Valid || isSubmitting}
+                        disabled={!isStep3Valid || isSubmitting}
                         className="flex-1 text-lg py-4 shadow-glow-orange hover:shadow-glow-orange-lg transition-shadow"
                       >
                         {isSubmitting ? (
