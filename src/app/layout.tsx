@@ -1,12 +1,5 @@
 import type { Viewport } from 'next'
-import { Inter } from 'next/font/google'
 import './globals.css'
-
-const inter = Inter({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-inter',
-})
 
 export const viewport: Viewport = {
   themeColor: '#FF4D00',
@@ -14,6 +7,7 @@ export const viewport: Viewport = {
   initialScale: 1,
 }
 
+// Root layout - minimal, just passes children to locale layout
 export default function RootLayout({
   children,
 }: Readonly<{

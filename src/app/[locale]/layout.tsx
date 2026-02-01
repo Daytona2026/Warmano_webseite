@@ -8,6 +8,7 @@ import StructuredData from '@/components/StructuredData'
 import CookieBanner from '@/components/CookieBanner'
 import OdooLiveChat from '@/components/OdooLiveChat'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
+import '../globals.css'
 
 const inter = Inter({
   subsets: ['latin'],
