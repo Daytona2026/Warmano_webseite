@@ -4,11 +4,10 @@ stages:
       commands:
             - npm ci
                   - npm run build
-                      artifacts:
-                            paths:
-                                    - out/**
-                                    ignoredPaths:
-                                      - node_modules
-                                        - .next
-                                          - .git
-                                            - .github
+                  ignoredPaths:
+                    - node_modules
+                      - .env
+                        - .env.local
+                          - .env.*.local
+                            - .git
+                              - .github
