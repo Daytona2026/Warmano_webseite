@@ -150,7 +150,7 @@ export async function GET(request: NextRequest) {
 
       const portalResult = await grantPortalAccess(partnerId)
       if (portalResult.success) {
-        return NextResponse.json({ success: true, method: 'grantPortalAccess', ...portalResult })
+        return NextResponse.json({ method: 'grantPortalAccess', ...portalResult })
       }
 
       const userResult = await createPortalUser({
@@ -158,7 +158,7 @@ export async function GET(request: NextRequest) {
         email: 'test@example.com',
         name: 'Test User',
       })
-      return NextResponse.json({ success: userResult.success, method: 'createPortalUser', ...userResult })
+      return NextResponse.json({ method: 'createPortalUser', ...userResult })
     }
 
     if (action === 'find-portal-group') {
