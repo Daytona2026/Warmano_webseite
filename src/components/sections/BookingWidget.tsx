@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { motion, AnimatePresence, useInView } from 'framer-motion'
-import { Check, ChevronRight, ChevronLeft, MapPin, Calendar, Shield, Clock, CreditCard, Star, Zap, Award, Sparkles } from 'lucide-react'
+import { Check, ChevronRight, ChevronLeft, MapPin, Calendar, Shield, Clock, CreditCard, Star, Zap, Award, Sparkles, Loader2, Gift, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 import Container from '@/components/ui/Container'
 import Button from '@/components/ui/Button'
@@ -18,19 +18,12 @@ const deviceBrands = [
   { name: 'Andere', icon: '🔧' },
 ]
 
-const timeSlots = [
-  { date: 'Mo, 10. Feb', slots: ['09:00-12:00', '13:00-16:00'] },
-  { date: 'Di, 11. Feb', slots: ['09:00-12:00', '13:00-16:00'] },
-  { date: 'Mi, 12. Feb', slots: ['09:00-12:00', '13:00-16:00'] },
-  { date: 'Do, 13. Feb', slots: ['09:00-12:00'] },
-  { date: 'Fr, 14. Feb', slots: ['09:00-12:00', '13:00-16:00'] },
-]
-
 const packages = [
   {
     id: 'basis',
     name: 'Basis',
     price: 249,
+    price3Years: 498,
     popular: false,
     description: 'Jährliche Wartung',
     icon: Shield,
@@ -40,6 +33,7 @@ const packages = [
     id: 'standard',
     name: 'Standard',
     price: 349,
+    price3Years: 698,
     popular: true,
     description: 'Wartung + Reparatur-Schutz',
     icon: Star,
@@ -49,6 +43,7 @@ const packages = [
     id: 'premium',
     name: 'Premium',
     price: 499,
+    price3Years: 998,
     popular: false,
     description: 'Rundum-Sorglos',
     icon: Award,
@@ -63,15 +58,52 @@ const stepLabels = [
   { label: 'Abschluss', icon: Check },
 ]
 
+// Generate next available dates (excluding weekends)
+function getAvailableDates(): { date: string; dateValue: string; slots: string[] }[] {
+  const dates: { date: string; dateValue: string; slots: string[] }[] = []
+  const today = new Date()
+  let daysAdded = 0
+  let currentDate = new Date(today)
+  currentDate.setDate(currentDate.getDate() + 5) // Start 5 days from now
+
+  while (daysAdded < 5) {
+    const dayOfWeek = currentDate.getDay()
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+      // Skip weekends
+      const dayNames = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa']
+      const day = dayNames[dayOfWeek]
+      const dateStr = currentDate.toLocaleDateString('de-DE', { day: '2-digit', month: 'short' })
+      const dateValue = currentDate.toISOString().split('T')[0]
+
+      dates.push({
+        date: `${day}, ${dateStr}`,
+        dateValue,
+        slots: dayOfWeek === 4 ? ['09:00-12:00'] : ['09:00-12:00', '13:00-16:00'], // Thursday only morning
+      })
+      daysAdded++
+    }
+    currentDate.setDate(currentDate.getDate() + 1)
+  }
+  return dates
+}
+
 export default function BookingWidget() {
   const [step, setStep] = useState(1)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
+  const [signUrl, setSignUrl] = useState<string | null>(null)
+  const [appointmentUrl, setAppointmentUrl] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     package: 'standard',
+    contractDuration: '1year' as '1year' | '3years',
+    paymentFrequency: 'yearly' as 'yearly' | 'monthly',
     brand: 'Viessmann',
     plz: '',
     city: '',
     street: '',
     date: '',
+    dateValue: '',
     time: '',
     firstName: '',
     lastName: '',
@@ -82,6 +114,7 @@ export default function BookingWidget() {
 
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, margin: '-100px' })
+  const timeSlots = getAvailableDates()
 
   const totalSteps = 4
 
@@ -93,12 +126,204 @@ export default function BookingWidget() {
   const prevStep = () => setStep(prev => Math.max(prev - 1, 1))
 
   const selectedPackage = packages.find(p => p.id === formData.package)
+  const is3Years = formData.contractDuration === '3years'
+  const displayPrice = is3Years
+    ? selectedPackage?.price3Years
+    : selectedPackage?.price
+  const monthlyPrice = is3Years
+    ? Math.round((selectedPackage?.price3Years || 0) / 36)
+    : Math.round((selectedPackage?.price || 0) / 12)
 
   // Validation helpers
   const isStep1Valid = formData.brand !== ''
   const isStep2Valid = formData.plz.length >= 4 && formData.city !== '' && formData.street !== ''
   const isStep3Valid = formData.date !== '' && formData.time !== ''
   const isStep4Valid = formData.firstName !== '' && formData.lastName !== '' && formData.email.includes('@') && formData.phone !== '' && formData.agbAccepted
+
+  // Handle form submission
+  const handleSubmit = async () => {
+    if (!isStep4Valid) return
+
+    setIsSubmitting(true)
+    setError(null)
+
+    try {
+      const response = await fetch('/api/booking', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+          street: formData.street,
+          zipCode: formData.plz,
+          city: formData.city,
+          package: formData.package,
+          contractDuration: formData.contractDuration,
+          paymentFrequency: formData.paymentFrequency,
+          manufacturer: formData.brand,
+          preferredDate: formData.dateValue,
+          message: `Termin: ${formData.date}, ${formData.time}`,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        setIsSuccess(true)
+        if (result.signUrl) {
+          setSignUrl(result.signUrl)
+        }
+        if (result.appointmentUrl) {
+          setAppointmentUrl(result.appointmentUrl)
+        }
+      } else {
+        setError(result.error || 'Buchung fehlgeschlagen. Bitte versuchen Sie es erneut.')
+      }
+    } catch (err) {
+      setError('Netzwerkfehler. Bitte prüfen Sie Ihre Internetverbindung.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  // Success screen with Sign and Appointment flow
+  if (isSuccess) {
+    return (
+      <section id="booking" ref={sectionRef} className="relative py-24 lg:py-32 bg-warmano-black overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-warmano-gray-900/50 via-warmano-black to-warmano-black" />
+        <motion.div
+          animate={{ scale: [1, 1.2, 1], opacity: [0.05, 0.1, 0.05] }}
+          transition={{ duration: 10, repeat: Infinity }}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-green-500 blur-[200px]"
+        />
+
+        <Container className="relative z-10">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="max-w-lg mx-auto text-center"
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
+              className="w-24 h-24 mx-auto mb-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-green-500/30"
+            >
+              <CheckCircle2 className="w-12 h-12 text-white" />
+            </motion.div>
+
+            <h2 className="text-3xl font-bold text-warmano-white mb-4">
+              {signUrl ? 'Fast geschafft!' : 'Buchung erfolgreich!'}
+            </h2>
+            <p className="text-lg text-warmano-gray-400 mb-8">
+              {signUrl
+                ? 'Bitte unterschreiben Sie jetzt Ihren Wartungsvertrag digital. Danach können Sie Ihren Termin buchen.'
+                : 'Vielen Dank für Ihre Buchung. Sie können jetzt Ihren Wartungstermin auswählen.'
+              }
+            </p>
+
+            <div className="bg-warmano-gray-800/50 border border-warmano-gray-700/50 rounded-2xl p-6 mb-8 text-left">
+              <h3 className="font-semibold text-warmano-white mb-4">Ihre Buchungsdetails:</h3>
+              <div className="space-y-2 text-sm">
+                <p className="flex justify-between">
+                  <span className="text-warmano-gray-400">Paket:</span>
+                  <span className="text-warmano-white font-medium">{selectedPackage?.name}</span>
+                </p>
+                <p className="flex justify-between">
+                  <span className="text-warmano-gray-400">Laufzeit:</span>
+                  <span className="text-warmano-white font-medium">{is3Years ? '3 Jahre' : '1 Jahr'}</span>
+                </p>
+                <p className="flex justify-between">
+                  <span className="text-warmano-gray-400">Wunschtermin:</span>
+                  <span className="text-warmano-white font-medium">{formData.date}, {formData.time}</span>
+                </p>
+                <p className="flex justify-between">
+                  <span className="text-warmano-gray-400">Preis:</span>
+                  <span className="text-warmano-orange font-bold">{displayPrice}€ {is3Years ? '/ 3 Jahre' : '/ Jahr'}</span>
+                </p>
+              </div>
+              {is3Years && (
+                <div className="mt-3 p-2 bg-green-500/20 rounded-lg flex items-center gap-2 text-sm text-green-400">
+                  <Gift className="w-4 h-4" />
+                  1. Jahr gratis – Sie sparen {selectedPackage?.price}€!
+                </div>
+              )}
+            </div>
+
+            {/* Action Buttons - Sign first, then Appointment */}
+            <div className="space-y-4">
+              {signUrl ? (
+                <>
+                  {/* Step 1: Sign Contract */}
+                  <motion.a
+                    href={signUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="flex items-center justify-center gap-3 w-full px-6 py-4 bg-gradient-to-r from-warmano-orange to-amber-500 text-white font-bold rounded-xl shadow-lg shadow-warmano-orange/30 hover:shadow-xl hover:shadow-warmano-orange/40 transition-all"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                    Vertrag digital unterschreiben
+                  </motion.a>
+
+                  {/* Step 2: Book Appointment (secondary, shown after signing info) */}
+                  {appointmentUrl && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.5 }}
+                      className="text-center"
+                    >
+                      <p className="text-sm text-warmano-gray-500 mb-3">
+                        Nach der Unterschrift:
+                      </p>
+                      <a
+                        href={appointmentUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-warmano-gray-800 border border-warmano-gray-700 text-warmano-white font-medium rounded-xl hover:bg-warmano-gray-700 transition-colors"
+                      >
+                        <Calendar className="w-5 h-5" />
+                        Wartungstermin buchen
+                      </a>
+                    </motion.div>
+                  )}
+                </>
+              ) : (
+                /* No Sign URL - go directly to appointment */
+                appointmentUrl && (
+                  <motion.a
+                    href={appointmentUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="flex items-center justify-center gap-3 w-full px-6 py-4 bg-gradient-to-r from-warmano-orange to-amber-500 text-white font-bold rounded-xl shadow-lg shadow-warmano-orange/30 hover:shadow-xl hover:shadow-warmano-orange/40 transition-all"
+                  >
+                    <Calendar className="w-5 h-5" />
+                    Jetzt Wartungstermin buchen
+                  </motion.a>
+                )
+              )}
+            </div>
+
+            <p className="text-sm text-warmano-gray-500 mt-8">
+              Eine Bestätigung wurde an <span className="text-warmano-white">{formData.email}</span> gesendet.
+            </p>
+          </motion.div>
+        </Container>
+      </section>
+    )
+  }
 
   return (
     <section id="booking" ref={sectionRef} className="relative py-24 lg:py-32 bg-warmano-black overflow-hidden">
@@ -227,11 +452,46 @@ export default function BookingWidget() {
                       Welches Paket möchten Sie?
                     </h3>
 
+                    {/* Contract Duration Toggle */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-semibold text-warmano-gray-300 mb-3">
+                        Vertragslaufzeit
+                      </label>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => updateForm('contractDuration', '1year')}
+                          className={`flex-1 p-4 rounded-xl border-2 transition-all ${
+                            formData.contractDuration === '1year'
+                              ? 'border-warmano-orange bg-warmano-orange/10'
+                              : 'border-warmano-gray-700/50 hover:border-warmano-gray-600'
+                          }`}
+                        >
+                          <span className="font-semibold text-warmano-white">1 Jahr</span>
+                          <p className="text-xs text-warmano-gray-400 mt-1">Jederzeit kündbar</p>
+                        </button>
+                        <button
+                          onClick={() => updateForm('contractDuration', '3years')}
+                          className={`flex-1 p-4 rounded-xl border-2 transition-all relative overflow-hidden ${
+                            formData.contractDuration === '3years'
+                              ? 'border-warmano-orange bg-warmano-orange/10'
+                              : 'border-warmano-gray-700/50 hover:border-warmano-gray-600'
+                          }`}
+                        >
+                          <div className="absolute top-0 right-0 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-bl-lg flex items-center gap-1">
+                            <Gift className="w-3 h-3" /> 1. Jahr gratis
+                          </div>
+                          <span className="font-semibold text-warmano-white">3 Jahre</span>
+                          <p className="text-xs text-warmano-gray-400 mt-1">Nur 2 Jahre zahlen</p>
+                        </button>
+                      </div>
+                    </div>
+
                     {/* Package Selection */}
-                    <div className="space-y-3 mb-8">
+                    <div className="space-y-3 mb-6">
                       {packages.map((pkg) => {
                         const isSelected = formData.package === pkg.id
                         const PkgIcon = pkg.icon
+                        const price = is3Years ? pkg.price3Years : pkg.price
 
                         return (
                           <motion.button
@@ -245,7 +505,6 @@ export default function BookingWidget() {
                                 : 'border-warmano-gray-700/50 bg-warmano-gray-800/30 hover:border-warmano-gray-600'
                             }`}
                           >
-                            {/* Selected glow */}
                             {isSelected && (
                               <motion.div
                                 layoutId="package-glow"
@@ -255,7 +514,6 @@ export default function BookingWidget() {
 
                             <div className="relative flex items-center justify-between">
                               <div className="flex items-center gap-4">
-                                {/* Icon */}
                                 <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${pkg.color} flex items-center justify-center shadow-lg ${isSelected ? 'scale-110' : ''} transition-transform`}>
                                   <PkgIcon className="w-6 h-6 text-white" />
                                 </div>
@@ -274,12 +532,14 @@ export default function BookingWidget() {
                               </div>
 
                               <div className="text-right">
-                                <span className="font-bold text-warmano-white text-2xl">{pkg.price}€</span>
-                                <span className="text-warmano-gray-500 text-sm">/Jahr</span>
+                                <span className="font-bold text-warmano-white text-2xl">{price}€</span>
+                                <span className="text-warmano-gray-500 text-sm">{is3Years ? '/3J.' : '/Jahr'}</span>
+                                {is3Years && (
+                                  <p className="text-xs text-green-400">Spare {pkg.price}€</p>
+                                )}
                               </div>
                             </div>
 
-                            {/* Selection indicator */}
                             <motion.div
                               initial={false}
                               animate={{ scale: isSelected ? 1 : 0 }}
@@ -290,6 +550,35 @@ export default function BookingWidget() {
                           </motion.button>
                         )
                       })}
+                    </div>
+
+                    {/* Payment Frequency */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-semibold text-warmano-gray-300 mb-3">
+                        Zahlweise
+                      </label>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => updateForm('paymentFrequency', 'yearly')}
+                          className={`flex-1 p-3 rounded-xl border transition-all text-sm ${
+                            formData.paymentFrequency === 'yearly'
+                              ? 'border-warmano-orange bg-warmano-orange/10 text-warmano-white'
+                              : 'border-warmano-gray-700/50 text-warmano-gray-400 hover:border-warmano-gray-600'
+                          }`}
+                        >
+                          Jährlich ({displayPrice}€)
+                        </button>
+                        <button
+                          onClick={() => updateForm('paymentFrequency', 'monthly')}
+                          className={`flex-1 p-3 rounded-xl border transition-all text-sm ${
+                            formData.paymentFrequency === 'monthly'
+                              ? 'border-warmano-orange bg-warmano-orange/10 text-warmano-white'
+                              : 'border-warmano-gray-700/50 text-warmano-gray-400 hover:border-warmano-gray-600'
+                          }`}
+                        >
+                          Monatlich ({monthlyPrice}€/Mt.)
+                        </button>
+                      </div>
                     </div>
 
                     {/* Brand Selection */}
@@ -427,6 +716,7 @@ export default function BookingWidget() {
                                   key={`${day.date}-${slot}`}
                                   onClick={() => {
                                     updateForm('date', day.date)
+                                    updateForm('dateValue', day.dateValue)
                                     updateForm('time', slot)
                                   }}
                                   whileHover={{ scale: 1.05 }}
@@ -494,11 +784,11 @@ export default function BookingWidget() {
                       <div className="grid grid-cols-2 gap-3 text-sm">
                         <div className="bg-warmano-black/30 rounded-lg p-3">
                           <span className="text-warmano-gray-400 text-xs">Paket</span>
-                          <p className="text-warmano-white font-semibold">{selectedPackage?.name} – {selectedPackage?.price}€/Jahr</p>
+                          <p className="text-warmano-white font-semibold">{selectedPackage?.name}</p>
                         </div>
                         <div className="bg-warmano-black/30 rounded-lg p-3">
-                          <span className="text-warmano-gray-400 text-xs">Gerät</span>
-                          <p className="text-warmano-white font-semibold">{formData.brand}</p>
+                          <span className="text-warmano-gray-400 text-xs">Preis</span>
+                          <p className="text-warmano-orange font-semibold">{displayPrice}€ {is3Years ? '/ 3 Jahre' : '/ Jahr'}</p>
                         </div>
                         <div className="bg-warmano-black/30 rounded-lg p-3">
                           <span className="text-warmano-gray-400 text-xs">Termin</span>
@@ -509,6 +799,12 @@ export default function BookingWidget() {
                           <p className="text-warmano-white font-semibold">{formData.plz} {formData.city}</p>
                         </div>
                       </div>
+                      {is3Years && (
+                        <div className="mt-3 p-2 bg-green-500/20 rounded-lg flex items-center gap-2 text-sm text-green-400">
+                          <Gift className="w-4 h-4" />
+                          1. Jahr gratis – Sie sparen {selectedPackage?.price}€!
+                        </div>
+                      )}
                     </motion.div>
 
                     <div className="space-y-4 mb-6">
@@ -544,6 +840,12 @@ export default function BookingWidget() {
                       />
                     </div>
 
+                    {error && (
+                      <div className="p-4 mb-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">
+                        {error}
+                      </div>
+                    )}
+
                     <label className="flex items-start gap-3 mb-6 cursor-pointer group">
                       <div className="relative mt-0.5">
                         <input
@@ -569,16 +871,26 @@ export default function BookingWidget() {
                     </label>
 
                     <div className="flex gap-3">
-                      <Button variant="secondary" onClick={prevStep} className="px-6">
+                      <Button variant="secondary" onClick={prevStep} className="px-6" disabled={isSubmitting}>
                         <ChevronLeft className="w-4 h-4 mr-1" />
                         Zurück
                       </Button>
                       <Button
-                        disabled={!isStep4Valid}
+                        onClick={handleSubmit}
+                        disabled={!isStep4Valid || isSubmitting}
                         className="flex-1 text-lg py-4 shadow-glow-orange hover:shadow-glow-orange-lg transition-shadow"
                       >
-                        Jetzt verbindlich buchen
-                        <Zap className="w-5 h-5 ml-2" />
+                        {isSubmitting ? (
+                          <>
+                            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                            Wird verarbeitet...
+                          </>
+                        ) : (
+                          <>
+                            Weiter zur Vertragsunterschrift
+                            <ChevronRight className="w-5 h-5 ml-2" />
+                          </>
+                        )}
                       </Button>
                     </div>
 

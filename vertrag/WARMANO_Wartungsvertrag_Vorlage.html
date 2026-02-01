@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>WARMANO Wartungsvertrag</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 11pt;
+      line-height: 1.5;
+      color: #1a1a1a;
+      padding: 40px 60px;
+      max-width: 210mm;
+      margin: 0 auto;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 3px solid #FF4D00;
+    }
+    .logo {
+      font-size: 28pt;
+      font-weight: bold;
+      color: #1a1a1a;
+    }
+    .logo span {
+      color: #FF4D00;
+    }
+    .logo-subtitle {
+      font-size: 9pt;
+      color: #666;
+      margin-top: 5px;
+    }
+    .company-info {
+      text-align: right;
+      font-size: 9pt;
+      color: #666;
+    }
+    h1 {
+      font-size: 18pt;
+      color: #1a1a1a;
+      margin-bottom: 25px;
+      text-align: center;
+    }
+    h2 {
+      font-size: 12pt;
+      color: #FF4D00;
+      margin-top: 25px;
+      margin-bottom: 10px;
+    }
+    p {
+      margin-bottom: 10px;
+      text-align: justify;
+    }
+    .contract-parties {
+      background: #f8f8f8;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 25px;
+    }
+    .party {
+      margin-bottom: 15px;
+    }
+    .party:last-child {
+      margin-bottom: 0;
+    }
+    .party-label {
+      font-weight: bold;
+      color: #FF4D00;
+      font-size: 10pt;
+      margin-bottom: 5px;
+    }
+    .field-placeholder {
+      display: inline-block;
+      min-width: 200px;
+      border-bottom: 1px solid #999;
+      padding: 2px 5px;
+      margin: 0 5px;
+      color: #666;
+      font-style: italic;
+    }
+    .field-placeholder.large {
+      min-width: 300px;
+    }
+    .package-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+    }
+    .package-table th,
+    .package-table td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+    .package-table th {
+      background: #FF4D00;
+      color: white;
+      font-weight: bold;
+    }
+    .package-table tr:nth-child(even) {
+      background: #f8f8f8;
+    }
+    .checkbox {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid #333;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    .checkbox.checked::after {
+      content: "✓";
+      font-size: 12pt;
+      position: relative;
+      top: -3px;
+      left: 1px;
+    }
+    .duration-options {
+      margin: 15px 0;
+      padding: 15px;
+      background: #fff8f5;
+      border: 1px solid #FF4D00;
+      border-radius: 8px;
+    }
+    .duration-option {
+      margin: 10px 0;
+    }
+    .highlight-box {
+      background: linear-gradient(135deg, #FF4D00 0%, #ff8c00 100%);
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+    }
+    .highlight-box strong {
+      display: block;
+      font-size: 12pt;
+      margin-bottom: 5px;
+    }
+    .signature-section {
+      margin-top: 40px;
+      page-break-inside: avoid;
+    }
+    .signature-grid {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 30px;
+    }
+    .signature-box {
+      width: 45%;
+    }
+    .signature-line {
+      border-bottom: 1px solid #333;
+      height: 60px;
+      margin-bottom: 5px;
+    }
+    .signature-label {
+      font-size: 9pt;
+      color: #666;
+    }
+    .footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid #ddd;
+      font-size: 8pt;
+      color: #999;
+      text-align: center;
+    }
+    ul {
+      margin-left: 20px;
+      margin-bottom: 10px;
+    }
+    li {
+      margin-bottom: 5px;
+    }
+    @media print {
+      body {
+        padding: 20px 40px;
+      }
+      .page-break {
+        page-break-before: always;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div>
+      <div class="logo">WARMANO<span>.</span></div>
+      <div class="logo-subtitle">Eine Marke der Bavaria Heizungstechnik GmbH</div>
+    </div>
+    <div class="company-info">
+      Bavaria Heizungstechnik GmbH<br>
+      Habichtstraße 33<br>
+      85716 Unterschleißheim<br>
+      Tel: 089 99 95 14-133<br>
+      info@warmano.de
+    </div>
+  </div>
+
+  <h1>Wartungsvertrag für Wärmepumpen</h1>
+
+  <div class="contract-parties">
+    <div class="party">
+      <div class="party-label">AUFTRAGNEHMER</div>
+      Bavaria Heizungstechnik GmbH, handelnd unter der Marke "WARMANO"<br>
+      Habichtstraße 33, 85716 Unterschleißheim<br>
+      Vertreten durch: Zoran Pozderovic (Geschäftsführer)
+    </div>
+    <div class="party">
+      <div class="party-label">AUFTRAGGEBER (Kunde)</div>
+      Name: <span class="field-placeholder large">[Kundenname]</span><br>
+      Straße: <span class="field-placeholder large">[Straße und Hausnummer]</span><br>
+      PLZ / Ort: <span class="field-placeholder">[PLZ]</span> <span class="field-placeholder">[Ort]</span><br>
+      E-Mail: <span class="field-placeholder large">[E-Mail-Adresse]</span><br>
+      Telefon: <span class="field-placeholder">[Telefonnummer]</span>
+    </div>
+  </div>
+
+  <h2>§ 1 Vertragsgegenstand</h2>
+  <p>
+    Der Auftragnehmer übernimmt die regelmäßige Wartung der Wärmepumpenanlage des Auftraggebers
+    am oben genannten Standort. Die Wartung erfolgt gemäß dem gewählten Leistungspaket und den
+    Herstellervorgaben.
+  </p>
+  <p>
+    <strong>Angaben zur Wärmepumpe:</strong><br>
+    Hersteller: <span class="field-placeholder">[Hersteller]</span><br>
+    Modell: <span class="field-placeholder">[Modell]</span><br>
+    Baujahr: <span class="field-placeholder">[Baujahr]</span>
+  </p>
+
+  <h2>§ 2 Gewähltes Leistungspaket</h2>
+  <p>Der Auftraggeber wählt folgendes Wartungspaket (bitte ankreuzen):</p>
+
+  <table class="package-table">
+    <tr>
+      <th>Paket</th>
+      <th>Leistungen</th>
+      <th>Preis/Jahr</th>
+      <th>Auswahl</th>
+    </tr>
+    <tr>
+      <td><strong>Basis</strong></td>
+      <td>
+        • Jährliche Komplett-Wartung<br>
+        • Digitales Wartungsprotokoll<br>
+        • Garantie-Dokumentation<br>
+        • Termin in 10 Tagen<br>
+        • Hotline zu Geschäftszeiten
+      </td>
+      <td>249,00 €</td>
+      <td style="text-align:center"><span class="checkbox"></span></td>
+    </tr>
+    <tr>
+      <td><strong>Standard</strong></td>
+      <td>
+        • Alle Basis-Leistungen<br>
+        • Priorisierter Termin in 3-5 Tagen<br>
+        • Reparaturen bis 100 € inklusive
+      </td>
+      <td>349,00 €</td>
+      <td style="text-align:center"><span class="checkbox"></span></td>
+    </tr>
+    <tr>
+      <td><strong>Premium</strong></td>
+      <td>
+        • Alle Standard-Leistungen<br>
+        • Express-Termin in 1-2 Tagen<br>
+        • 24/7 Notfall-Hotline<br>
+        • Reparaturen bis 250 € inklusive<br>
+        • 1 Stunde Arbeitszeit gratis
+      </td>
+      <td>499,00 €</td>
+      <td style="text-align:center"><span class="checkbox"></span></td>
+    </tr>
+  </table>
+
+  <h2>§ 3 Vertragslaufzeit</h2>
+  <div class="duration-options">
+    <div class="duration-option">
+      <span class="checkbox"></span>
+      <strong>1-Jahresvertrag</strong> – Verlängert sich automatisch um je 1 Jahr,
+      kündbar mit 4 Wochen Frist zum Vertragsende.
+    </div>
+    <div class="duration-option">
+      <span class="checkbox"></span>
+      <strong>3-Jahresvertrag</strong> – Feste Laufzeit von 3 Jahren.
+      Nach Ablauf automatische Verlängerung um je 1 Jahr, kündbar mit 4 Wochen Frist.
+    </div>
+  </div>
+
+  <div class="highlight-box">
+    <strong>AKTION: 1. Jahr GRATIS bei 3-Jahresvertrag!</strong>
+    Bei Abschluss eines 3-Jahresvertrags zahlen Sie nur 2 Jahresbeiträge.
+    Das erste Jahr ist kostenlos.
+  </div>
+
+  <h2>§ 4 Vergütung und Zahlung</h2>
+  <p>
+    <strong>Gewählter Jahresbeitrag:</strong> <span class="field-placeholder">[Preis]</span> € (inkl. MwSt.)
+  </p>
+  <p>
+    <strong>Zahlweise:</strong><br>
+    <span class="checkbox"></span> Jährlich im Voraus<br>
+    <span class="checkbox"></span> Monatlich per SEPA-Lastschrift
+  </p>
+  <p>
+    Die Zahlung erfolgt per SEPA-Lastschrift, Überweisung oder Kreditkarte.
+    Bei jährlicher Zahlung ist der Betrag bei Vertragsbeginn fällig.
+    Bei monatlicher Zahlung jeweils zum Monatsanfang.
+  </p>
+
+  <h2>§ 5 Durchführung der Wartung</h2>
+  <p>
+    Die Wartung wird einmal jährlich durchgeführt. Der Auftragnehmer kontaktiert den Auftraggeber
+    rechtzeitig zur Terminvereinbarung. Der Auftraggeber gewährleistet den Zugang zur Anlage.
+  </p>
+  <p>
+    Nach jeder Wartung erhält der Auftraggeber ein digitales Wartungsprotokoll per E-Mail.
+    Dieses dient als Nachweis für Herstellergarantien.
+  </p>
+
+  <h2>§ 6 Widerrufsrecht</h2>
+  <p>
+    Als Verbraucher haben Sie das Recht, binnen 14 Tagen ohne Angabe von Gründen diesen Vertrag
+    zu widerrufen. Die Widerrufsfrist beträgt 14 Tage ab dem Tag des Vertragsabschlusses.
+  </p>
+  <p>
+    Um Ihr Widerrufsrecht auszuüben, müssen Sie uns (Bavaria Heizungstechnik GmbH,
+    Habichtstraße 33, 85716 Unterschleißheim, E-Mail: info@warmano.de) mittels einer
+    eindeutigen Erklärung über Ihren Entschluss informieren.
+  </p>
+
+  <h2>§ 7 Schlussbestimmungen</h2>
+  <p>
+    Es gelten die Allgemeinen Geschäftsbedingungen der Bavaria Heizungstechnik GmbH in der
+    jeweils aktuellen Fassung (einsehbar unter www.warmano.de/agb). Änderungen und Ergänzungen
+    dieses Vertrages bedürfen der Schriftform. Es gilt deutsches Recht.
+  </p>
+  <p>
+    Die Verarbeitung personenbezogener Daten erfolgt gemäß unserer Datenschutzerklärung
+    (www.warmano.de/datenschutz).
+  </p>
+
+  <div class="signature-section">
+    <h2>§ 8 Unterschriften</h2>
+    <p>
+      Mit meiner Unterschrift bestätige ich, dass ich die oben genannten Vertragsbedingungen,
+      die AGB und die Datenschutzerklärung gelesen und akzeptiert habe.
+    </p>
+
+    <div class="signature-grid">
+      <div class="signature-box">
+        <div class="signature-line"></div>
+        <div class="signature-label">
+          Ort, Datum<br>
+          <span class="field-placeholder">[Ort, Datum]</span>
+        </div>
+      </div>
+      <div class="signature-box">
+        <div class="signature-line"></div>
+        <div class="signature-label">
+          Unterschrift Auftraggeber<br>
+          <span class="field-placeholder">[Unterschrift]</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Bavaria Heizungstechnik GmbH | Habichtstraße 33, 85716 Unterschleißheim |
+    HRB 273654 (AG München) | USt-IdNr: DE 367 620 726 |
+    Geschäftsführer: Zoran Pozderovic<br>
+    www.warmano.de | info@warmano.de | Tel: 089 99 95 14-133
+  </div>
+
+</body>
+</html>
