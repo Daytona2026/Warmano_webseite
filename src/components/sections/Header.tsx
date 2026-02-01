@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils'
 const navigation = [
   { name: 'So funktioniert\'s', href: 'services', isSection: true },
   { name: 'Preise', href: 'pricing', isSection: true },
+  { name: 'Empfehlen', href: 'referral', isSection: true },
   { name: 'Blog', href: '/blog', isSection: false },
   { name: 'FAQ', href: 'faq', isSection: true },
   { name: 'Kontakt', href: 'contact', isSection: true },
