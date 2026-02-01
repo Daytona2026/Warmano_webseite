@@ -6,7 +6,6 @@ import { Check, ChevronRight, ChevronLeft, MapPin, Calendar, Shield, Clock, Cred
 import Link from 'next/link'
 import Container from '@/components/ui/Container'
 import Button from '@/components/ui/Button'
-import AddressAutocomplete from '@/components/ui/AddressAutocomplete'
 
 const deviceBrands = [
   { name: 'Viessmann', icon: '🔥' },
@@ -677,34 +676,30 @@ export default function BookingWidget() {
                     </h3>
 
                     <div className="space-y-4 mb-6">
-                      {/* Address Autocomplete */}
-                      <AddressAutocomplete
-                        onAddressSelect={(address) => {
-                          updateForm('street', address.street)
-                          updateForm('plz', address.zipCode)
-                          updateForm('city', address.city)
-                        }}
-                        placeholder="Adresse eingeben (z.B. Musterstraße 1, München)..."
-                        initialValue={formData.street ? `${formData.street}, ${formData.plz} ${formData.city}` : ''}
+                      <div className="grid grid-cols-3 gap-3">
+                        <input
+                          type="text"
+                          placeholder="PLZ *"
+                          value={formData.plz}
+                          onChange={(e) => updateForm('plz', e.target.value)}
+                          className="input-field bg-warmano-gray-800/50 border-warmano-gray-700/50"
+                          maxLength={5}
+                        />
+                        <input
+                          type="text"
+                          placeholder="Stadt *"
+                          value={formData.city}
+                          onChange={(e) => updateForm('city', e.target.value)}
+                          className="input-field col-span-2 bg-warmano-gray-800/50 border-warmano-gray-700/50"
+                        />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Straße und Hausnummer *"
+                        value={formData.street}
+                        onChange={(e) => updateForm('street', e.target.value)}
+                        className="input-field bg-warmano-gray-800/50 border-warmano-gray-700/50"
                       />
-
-                      {/* Show selected address details */}
-                      {formData.street && formData.plz && formData.city && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="grid grid-cols-3 gap-3"
-                        >
-                          <div className="bg-warmano-gray-800/30 border border-warmano-gray-700/30 rounded-xl p-3">
-                            <span className="text-xs text-warmano-gray-500">PLZ</span>
-                            <p className="text-warmano-white font-medium">{formData.plz}</p>
-                          </div>
-                          <div className="col-span-2 bg-warmano-gray-800/30 border border-warmano-gray-700/30 rounded-xl p-3">
-                            <span className="text-xs text-warmano-gray-500">Stadt</span>
-                            <p className="text-warmano-white font-medium">{formData.city}</p>
-                          </div>
-                        </motion.div>
-                      )}
                     </div>
 
                     <div className="p-4 bg-warmano-orange/10 border border-warmano-orange/20 rounded-xl mb-6 flex items-start gap-3">
