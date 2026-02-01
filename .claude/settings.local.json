@@ -15,7 +15,24 @@
       "Bash(open \"http://localhost:3000\")",
       "Bash(npm run build:*)",
       "Bash(npm run dev)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "WebFetch(domain:www.bavaria-heizungstechnik.de)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git pull:*)",
+      "Bash(python3:*)",
+      "Bash(git add:*)",
+      "Bash(gh run list:*)",
+      "Bash(git stash:*)",
+      "Bash(nslookup:*)",
+      "Bash(dig:*)",
+      "Bash(git restore:*)",
+      "Bash(find:*)",
+      "WebFetch(domain:warmano.odoo.com)",
+      "WebFetch(domain:www.warmano.de)",
+      "Bash(pkill:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(grep:*)"
     ]
   }
 }

@@ -130,17 +130,17 @@ export default function TestimonialsSection() {
             ))}
           </div>
 
-          <motion.div
+          <motion.h2
             initial={{ opacity: 0, scale: 0.9 }}
             animate={isInView ? { opacity: 1, scale: 1 } : {}}
             transition={{ duration: 0.5, delay: 0.5 }}
-            className="mb-6"
+            className="text-3xl sm:text-4xl lg:text-5xl font-bold text-warmano-white mb-6"
           >
-            <span className="text-5xl sm:text-6xl font-bold text-warmano-white">
+            <span className="text-5xl sm:text-6xl">
               {(ratingCount / 10).toFixed(1)}
             </span>
-            <span className="text-xl text-warmano-gray-500 ml-2">von 5 Sternen</span>
-          </motion.div>
+            <span className="text-xl text-warmano-gray-500 ml-2 font-normal">von 5 Sternen</span>
+          </motion.h2>
 
           <motion.p
             initial={{ opacity: 0 }}

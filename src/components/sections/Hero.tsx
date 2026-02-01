@@ -154,37 +154,35 @@ export default function Hero() {
             </motion.div>
 
             {/* Animated Headline */}
-            <div className="mb-6">
-              <motion.h1
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.1] tracking-tight mb-6">
+              <motion.span
                 custom={0}
                 initial="hidden"
                 animate="visible"
                 variants={textRevealVariants}
-                className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-warmano-white leading-[1.1] tracking-tight"
+                className="block text-warmano-white"
               >
                 Wärmepumpen-
-              </motion.h1>
-              <motion.h1
+              </motion.span>
+              <motion.span
                 custom={1}
                 initial="hidden"
                 animate="visible"
                 variants={textRevealVariants}
-                className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.1] tracking-tight"
+                className="block bg-gradient-to-r from-warmano-orange via-amber-500 to-warmano-orange-light bg-[length:200%_auto] animate-gradient-shift bg-clip-text text-transparent"
               >
-                <span className="bg-gradient-to-r from-warmano-orange via-amber-500 to-warmano-orange-light bg-[length:200%_auto] animate-gradient-shift bg-clip-text text-transparent">
-                  Wartung
-                </span>
-              </motion.h1>
-              <motion.h1
+                Wartung
+              </motion.span>
+              <motion.span
                 custom={2}
                 initial="hidden"
                 animate="visible"
                 variants={textRevealVariants}
-                className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-warmano-white leading-[1.1] tracking-tight"
+                className="block text-warmano-white"
               >
                 zum Festpreis
-              </motion.h1>
-            </div>
+              </motion.span>
+            </h1>
 
             {/* Subheadline */}
             <motion.p
