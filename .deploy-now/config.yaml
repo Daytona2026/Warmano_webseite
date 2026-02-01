@@ -1,0 +1,14 @@
+runtime: nodejs:22
+stages:
+  build:
+      commands:
+            - npm ci
+                  - npm run build
+                      artifacts:
+                            paths:
+                                    - out/**
+                                    ignoredPaths:
+                                      - node_modules
+                                        - .next
+                                          - .git
+                                            - .github
