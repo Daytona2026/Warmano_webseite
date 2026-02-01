@@ -1299,8 +1299,35 @@ export async function createSubscriptionOrder(data: {
   error?: string
 }> {
   try {
+    // 1. Find or create the recurrence rule (billing frequency)
+    let recurrenceId: number | null = null
+    const recurrenceName = data.paymentFrequency === 'monthly' ? 'Monthly' : 'Yearly'
+    const recurrenceUnit = data.paymentFrequency === 'monthly' ? 'month' : 'year'
 
-    // Find or create the product for this package
+    // Search for existing recurrence
+    const existingRecurrences = await execute('sale.temporal.recurrence', 'search', [
+      [['unit', '=', recurrenceUnit], ['duration', '=', 1]]
+    ]) as number[]
+
+    if (Array.isArray(existingRecurrences) && existingRecurrences.length > 0) {
+      recurrenceId = existingRecurrences[0]
+    } else {
+      // Create recurrence if not exists
+      try {
+        recurrenceId = await execute('sale.temporal.recurrence', 'create', [
+          {
+            name: recurrenceName,
+            unit: recurrenceUnit,
+            duration: 1,
+          }
+        ]) as number
+      } catch {
+        // Recurrence model might not exist or have different name in this Odoo version
+        // Continue without recurrence
+      }
+    }
+
+    // 2. Find or create the product for this package
     let productId: number | null = null
     const productName = `WARMANO ${data.packageName} Wartungspaket`
 
@@ -1323,23 +1350,37 @@ export async function createSubscriptionOrder(data: {
       ]) as number
     }
 
-    // Calculate pricing based on contract duration
+    // 3. Calculate pricing based on contract duration
     let unitPrice = data.packagePrice
+    const contractYears = data.contractDuration === '3years' ? 3 : 1
     if (data.contractDuration === '3years') {
       // First year free - so 2 years for 3 year contract
       unitPrice = (data.packagePrice * 2) / 3
     }
 
-    // Create sale order
-    const orderId = await execute('sale.order', 'create', [
-      {
-        partner_id: data.partnerId,
-        is_subscription: true,
-        note: `WARMANO Wartungsvertrag - ${data.packageName}\nLaufzeit: ${data.contractDuration === '3years' ? '3 Jahre (1. Jahr gratis)' : '1 Jahr'}\nZahlweise: ${data.paymentFrequency === 'monthly' ? 'Monatlich' : 'Jährlich'}`,
-      }
-    ]) as number
+    // 4. Create sale order with subscription fields
+    const orderData: Record<string, unknown> = {
+      partner_id: data.partnerId,
+      is_subscription: true,
+      subscription_state: 'draft', // Will be activated after confirmation
+      note: `WARMANO Wartungsvertrag - ${data.packageName}\nLaufzeit: ${contractYears} Jahr(e)${data.contractDuration === '3years' ? ' (1. Jahr gratis)' : ''}\nZahlweise: ${data.paymentFrequency === 'monthly' ? 'Monatlich' : 'Jährlich'}`,
+    }
 
-    // Add order line
+    // Add recurrence if available
+    if (recurrenceId) {
+      orderData.recurrence_id = recurrenceId
+    }
+
+    // Set end date for contract duration
+    const startDate = new Date()
+    const endDate = new Date()
+    endDate.setFullYear(endDate.getFullYear() + contractYears)
+    orderData.start_date = startDate.toISOString().split('T')[0]
+    orderData.end_date = endDate.toISOString().split('T')[0]
+
+    const orderId = await execute('sale.order', 'create', [orderData]) as number
+
+    // 5. Add order line
     await execute('sale.order.line', 'create', [
       {
         order_id: orderId,
@@ -1350,12 +1391,11 @@ export async function createSubscriptionOrder(data: {
       }
     ])
 
-    // Get order name
+    // 6. Get order name
     const orders = await execute('sale.order', 'read', [
       [orderId],
       ['name'],
     ]) as Array<{ name: string }>
-
 
     return {
       success: true,
