@@ -8,6 +8,8 @@ import PricingComparison from '@/components/sections/PricingComparison'
 import TestimonialsSection from '@/components/sections/TestimonialsSection'
 import BookingWidget from '@/components/sections/BookingWidget'
 import FAQSection from '@/components/sections/FAQSection'
+import SupportForm from '@/components/sections/SupportForm'
+import ReferralProgram from '@/components/sections/ReferralProgram'
 import CTASection from '@/components/sections/CTASection'
 import Footer from '@/components/sections/Footer'
 
@@ -43,7 +45,13 @@ export default function Home() {
         {/* 8. FAQ: Letzte Fragen klären */}
         <FAQSection />
 
-        {/* 9. Final CTA */}
+        {/* 9. Support: Hilfe & Tickets */}
+        <SupportForm />
+
+        {/* 10. Empfehlungsprogramm */}
+        <ReferralProgram />
+
+        {/* 11. Final CTA */}
         <CTASection />
       </main>
       <Footer />

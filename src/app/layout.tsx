@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import StructuredData from '@/components/StructuredData'
 import CookieBanner from '@/components/CookieBanner'
+import OdooLiveChat from '@/components/OdooLiveChat'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -61,6 +62,7 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         {children}
         <CookieBanner />
+        <OdooLiveChat />
       </body>
     </html>
   )

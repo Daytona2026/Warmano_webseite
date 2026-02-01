@@ -1033,6 +1033,29 @@ export async function processBookingWithSign(data: BookingData): Promise<{
       // Continue anyway - sign and appointment still work
     }
 
+    // 3b. Create subscription order
+    const packagePricesForSub = {
+      basis: { name: 'Basis', price: 249 },
+      standard: { name: 'Standard', price: 349 },
+      premium: { name: 'Premium', price: 499 },
+    }
+    const pkgForSub = packagePricesForSub[data.package]
+
+    console.log('Creating subscription order...')
+    const subscriptionResult = await createSubscriptionOrder({
+      partnerId,
+      packageName: pkgForSub.name,
+      packagePrice: pkgForSub.price,
+      contractDuration: data.contractDuration,
+      paymentFrequency: data.paymentFrequency,
+    })
+    if (subscriptionResult.success) {
+      console.log('Subscription order created:', subscriptionResult.orderName)
+    } else {
+      console.warn('Subscription order failed:', subscriptionResult.error)
+      // Continue anyway
+    }
+
     // 4. Find the Sign template (search with .pdf extension)
     const templateId = await findSignTemplate('WARMANO Wartungsvertrag.pdf')
 
@@ -1280,6 +1303,489 @@ export async function createPortalUser(data: {
     return {
       success: false,
       error: error instanceof Error ? error.message : 'User creation failed',
+    }
+  }
+}
+
+// ============================================
+// SUBSCRIPTION MANAGEMENT
+// ============================================
+
+/**
+ * Create a subscription/recurring sale order for the customer
+ */
+export async function createSubscriptionOrder(data: {
+  partnerId: number
+  packageName: string
+  packagePrice: number
+  contractDuration: '1year' | '3years'
+  paymentFrequency: 'yearly' | 'monthly'
+}): Promise<{
+  success: boolean
+  orderId?: number
+  orderName?: string
+  error?: string
+}> {
+  try {
+    console.log('Creating subscription order for partner:', data.partnerId)
+
+    // Find or create the product for this package
+    let productId: number | null = null
+    const productName = `WARMANO ${data.packageName} Wartungspaket`
+
+    // Search for existing product
+    const existingProducts = await execute('product.product', 'search', [
+      [['name', '=', productName]]
+    ]) as number[]
+
+    if (Array.isArray(existingProducts) && existingProducts.length > 0) {
+      productId = existingProducts[0]
+    } else {
+      // Create product if not exists
+      productId = await execute('product.product', 'create', [
+        {
+          name: productName,
+          type: 'service',
+          list_price: data.packagePrice,
+          recurring_invoice: true,
+        }
+      ]) as number
+    }
+
+    // Calculate pricing based on contract duration
+    let unitPrice = data.packagePrice
+    if (data.contractDuration === '3years') {
+      // First year free - so 2 years for 3 year contract
+      unitPrice = (data.packagePrice * 2) / 3
+    }
+
+    // Create sale order
+    const orderId = await execute('sale.order', 'create', [
+      {
+        partner_id: data.partnerId,
+        is_subscription: true,
+        note: `WARMANO Wartungsvertrag - ${data.packageName}\nLaufzeit: ${data.contractDuration === '3years' ? '3 Jahre (1. Jahr gratis)' : '1 Jahr'}\nZahlweise: ${data.paymentFrequency === 'monthly' ? 'Monatlich' : 'Jährlich'}`,
+      }
+    ]) as number
+
+    // Add order line
+    await execute('sale.order.line', 'create', [
+      {
+        order_id: orderId,
+        product_id: productId,
+        name: productName,
+        product_uom_qty: 1,
+        price_unit: unitPrice,
+      }
+    ])
+
+    // Get order name
+    const orders = await execute('sale.order', 'read', [
+      [orderId],
+      ['name'],
+    ]) as Array<{ name: string }>
+
+    console.log('Subscription order created:', orderId)
+
+    return {
+      success: true,
+      orderId,
+      orderName: orders?.[0]?.name,
+    }
+  } catch (error) {
+    console.error('Error creating subscription:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Subscription creation failed',
+    }
+  }
+}
+
+// ============================================
+// HELPDESK / SUPPORT TICKETS
+// ============================================
+
+export interface HelpdeskTicketData {
+  partnerId?: number
+  partnerEmail: string
+  partnerName: string
+  subject: string
+  description: string
+  priority?: '0' | '1' | '2' | '3' // 0=Low, 1=Medium, 2=High, 3=Urgent
+}
+
+/**
+ * Create a helpdesk ticket
+ */
+export async function createHelpdeskTicket(data: HelpdeskTicketData): Promise<{
+  success: boolean
+  ticketId?: number
+  ticketNumber?: string
+  error?: string
+}> {
+  try {
+    console.log('Creating helpdesk ticket for:', data.partnerEmail)
+
+    // Find or create partner
+    let partnerId = data.partnerId
+    if (!partnerId) {
+      const existingPartners = await execute('res.partner', 'search', [
+        [['email', '=', data.partnerEmail]]
+      ]) as number[]
+
+      if (Array.isArray(existingPartners) && existingPartners.length > 0) {
+        partnerId = existingPartners[0]
+      } else {
+        partnerId = await execute('res.partner', 'create', [
+          {
+            name: data.partnerName,
+            email: data.partnerEmail,
+          }
+        ]) as number
+      }
+    }
+
+    // Find helpdesk team (use first available)
+    const teams = await execute('helpdesk.team', 'search', [[]]) as number[]
+    const teamId = Array.isArray(teams) && teams.length > 0 ? teams[0] : null
+
+    // Create ticket
+    const ticketData: Record<string, unknown> = {
+      name: data.subject,
+      description: data.description,
+      partner_id: partnerId,
+      partner_email: data.partnerEmail,
+      priority: data.priority || '1',
+    }
+
+    if (teamId) {
+      ticketData.team_id = teamId
+    }
+
+    const ticketId = await execute('helpdesk.ticket', 'create', [ticketData]) as number
+
+    // Get ticket number
+    const tickets = await execute('helpdesk.ticket', 'read', [
+      [ticketId],
+      ['ticket_ref', 'name'],
+    ]) as Array<{ ticket_ref?: string; name: string }>
+
+    console.log('Helpdesk ticket created:', ticketId)
+
+    return {
+      success: true,
+      ticketId,
+      ticketNumber: tickets?.[0]?.ticket_ref || `#${ticketId}`,
+    }
+  } catch (error) {
+    console.error('Error creating helpdesk ticket:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Ticket creation failed',
+    }
+  }
+}
+
+/**
+ * Get tickets for a partner
+ */
+export async function getPartnerTickets(partnerEmail: string): Promise<{
+  success: boolean
+  tickets?: Array<{
+    id: number
+    number: string
+    subject: string
+    status: string
+    createDate: string
+  }>
+  error?: string
+}> {
+  try {
+    // Find partner
+    const partners = await execute('res.partner', 'search', [
+      [['email', '=', partnerEmail]]
+    ]) as number[]
+
+    if (!Array.isArray(partners) || partners.length === 0) {
+      return { success: true, tickets: [] }
+    }
+
+    // Get tickets
+    const ticketIds = await execute('helpdesk.ticket', 'search', [
+      [['partner_id', '=', partners[0]]]
+    ]) as number[]
+
+    if (!Array.isArray(ticketIds) || ticketIds.length === 0) {
+      return { success: true, tickets: [] }
+    }
+
+    const ticketsData = await execute('helpdesk.ticket', 'read', [
+      ticketIds,
+      ['ticket_ref', 'name', 'stage_id', 'create_date'],
+    ]) as Array<{
+      id: number
+      ticket_ref?: string
+      name: string
+      stage_id?: [number, string]
+      create_date: string
+    }>
+
+    const tickets = ticketsData.map(t => ({
+      id: t.id,
+      number: t.ticket_ref || `#${t.id}`,
+      subject: t.name,
+      status: Array.isArray(t.stage_id) ? t.stage_id[1] : 'Neu',
+      createDate: t.create_date,
+    }))
+
+    return { success: true, tickets }
+  } catch (error) {
+    console.error('Error getting partner tickets:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get tickets',
+    }
+  }
+}
+
+// ============================================
+// INVOICES & PAYMENTS
+// ============================================
+
+/**
+ * Get invoices for a partner
+ */
+export async function getPartnerInvoices(partnerEmail: string): Promise<{
+  success: boolean
+  invoices?: Array<{
+    id: number
+    number: string
+    date: string
+    dueDate: string
+    amount: number
+    amountDue: number
+    status: 'draft' | 'posted' | 'paid' | 'cancelled'
+    pdfUrl?: string
+  }>
+  error?: string
+}> {
+  try {
+    // Find partner
+    const partners = await execute('res.partner', 'search', [
+      [['email', '=', partnerEmail]]
+    ]) as number[]
+
+    if (!Array.isArray(partners) || partners.length === 0) {
+      return { success: true, invoices: [] }
+    }
+
+    // Get invoices (account.move with move_type = out_invoice)
+    const invoiceIds = await execute('account.move', 'search', [
+      [
+        ['partner_id', '=', partners[0]],
+        ['move_type', '=', 'out_invoice'],
+      ]
+    ]) as number[]
+
+    if (!Array.isArray(invoiceIds) || invoiceIds.length === 0) {
+      return { success: true, invoices: [] }
+    }
+
+    const invoicesData = await execute('account.move', 'read', [
+      invoiceIds,
+      ['name', 'invoice_date', 'invoice_date_due', 'amount_total', 'amount_residual', 'state', 'payment_state'],
+    ]) as Array<{
+      id: number
+      name: string
+      invoice_date: string
+      invoice_date_due: string
+      amount_total: number
+      amount_residual: number
+      state: string
+      payment_state: string
+    }>
+
+    const invoices = invoicesData.map(inv => ({
+      id: inv.id,
+      number: inv.name,
+      date: inv.invoice_date,
+      dueDate: inv.invoice_date_due,
+      amount: inv.amount_total,
+      amountDue: inv.amount_residual,
+      status: (inv.payment_state === 'paid' ? 'paid' : inv.state) as 'draft' | 'posted' | 'paid' | 'cancelled',
+      pdfUrl: `${ODOO_URL}/my/invoices/${inv.id}`,
+    }))
+
+    return { success: true, invoices }
+  } catch (error) {
+    console.error('Error getting partner invoices:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get invoices',
+    }
+  }
+}
+
+// ============================================
+// REFERRAL PROGRAM
+// ============================================
+
+/**
+ * Create a referral lead when someone uses a referral code
+ */
+export async function createReferralLead(data: {
+  referrerEmail: string
+  referredName: string
+  referredEmail: string
+  referredPhone: string
+}): Promise<{
+  success: boolean
+  leadId?: number
+  referrerId?: number
+  error?: string
+}> {
+  try {
+    console.log('Creating referral lead from:', data.referrerEmail)
+
+    // Find referrer partner
+    const referrers = await execute('res.partner', 'search', [
+      [['email', '=', data.referrerEmail]]
+    ]) as number[]
+
+    const referrerId = Array.isArray(referrers) && referrers.length > 0 ? referrers[0] : null
+
+    // Create lead for referred person
+    const leadId = await execute('crm.lead', 'create', [
+      {
+        name: `Empfehlung: ${data.referredName}`,
+        contact_name: data.referredName,
+        email_from: data.referredEmail,
+        phone: data.referredPhone,
+        description: `Empfohlen von: ${data.referrerEmail}\n\nDieser Lead wurde über das Empfehlungsprogramm erstellt.`,
+        referred: referrerId || undefined,
+        source_id: 1, // Website source - adjust as needed
+      }
+    ]) as number
+
+    console.log('Referral lead created:', leadId)
+
+    return {
+      success: true,
+      leadId,
+      referrerId: referrerId || undefined,
+    }
+  } catch (error) {
+    console.error('Error creating referral lead:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Referral creation failed',
+    }
+  }
+}
+
+/**
+ * Get referral statistics for a partner
+ */
+export async function getReferralStats(partnerEmail: string): Promise<{
+  success: boolean
+  stats?: {
+    totalReferrals: number
+    successfulReferrals: number
+    pendingReferrals: number
+    referralCode: string
+  }
+  error?: string
+}> {
+  try {
+    // Find partner
+    const partners = await execute('res.partner', 'search', [
+      [['email', '=', partnerEmail]]
+    ]) as number[]
+
+    if (!Array.isArray(partners) || partners.length === 0) {
+      return {
+        success: true,
+        stats: {
+          totalReferrals: 0,
+          successfulReferrals: 0,
+          pendingReferrals: 0,
+          referralCode: '',
+        }
+      }
+    }
+
+    const partnerId = partners[0]
+
+    // Generate referral code from partner ID
+    const referralCode = `WARMANO-${partnerId.toString().padStart(5, '0')}`
+
+    // Count referrals (leads where description contains the referrer email)
+    const allReferrals = await execute('crm.lead', 'search_count', [
+      [['description', 'ilike', partnerEmail]]
+    ]) as number
+
+    // Count won referrals
+    const wonReferrals = await execute('crm.lead', 'search_count', [
+      [
+        ['description', 'ilike', partnerEmail],
+        ['stage_id.is_won', '=', true],
+      ]
+    ]) as number
+
+    return {
+      success: true,
+      stats: {
+        totalReferrals: allReferrals || 0,
+        successfulReferrals: wonReferrals || 0,
+        pendingReferrals: (allReferrals || 0) - (wonReferrals || 0),
+        referralCode,
+      }
+    }
+  } catch (error) {
+    console.error('Error getting referral stats:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get referral stats',
+    }
+  }
+}
+
+// ============================================
+// LIVECHAT CONFIGURATION
+// ============================================
+
+/**
+ * Get LiveChat channel configuration for embedding
+ */
+export async function getLiveChatConfig(): Promise<{
+  success: boolean
+  channelId?: number
+  channelUuid?: string
+  error?: string
+}> {
+  try {
+    // Find first active livechat channel
+    const channels = await execute('im_livechat.channel', 'search_read', [
+      [],
+      ['id', 'name'],
+    ]) as Array<{ id: number; name: string }>
+
+    if (!Array.isArray(channels) || channels.length === 0) {
+      return {
+        success: false,
+        error: 'No LiveChat channel found',
+      }
+    }
+
+    return {
+      success: true,
+      channelId: channels[0].id,
+    }
+  } catch (error) {
+    console.error('Error getting LiveChat config:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get LiveChat config',
     }
   }
 }
