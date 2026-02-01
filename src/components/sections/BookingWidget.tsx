@@ -93,6 +93,7 @@ export default function BookingWidget() {
   const [isSuccess, setIsSuccess] = useState(false)
   const [signUrl, setSignUrl] = useState<string | null>(null)
   const [appointmentUrl, setAppointmentUrl] = useState<string | null>(null)
+  const [portalUrl, setPortalUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     package: 'standard',
@@ -179,6 +180,9 @@ export default function BookingWidget() {
         }
         if (result.appointmentUrl) {
           setAppointmentUrl(result.appointmentUrl)
+        }
+        if (result.portalUrl) {
+          setPortalUrl(result.portalUrl)
         }
       } else {
         setError(result.error || 'Buchung fehlgeschlagen. Bitte versuchen Sie es erneut.')
@@ -316,7 +320,43 @@ export default function BookingWidget() {
               )}
             </div>
 
-            <p className="text-sm text-warmano-gray-500 mt-8">
+            {/* Portal Access Info */}
+            {portalUrl && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.7 }}
+                className="mt-6 p-4 bg-warmano-gray-800/50 border border-warmano-gray-700/50 rounded-xl"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-warmano-white text-sm">Ihr Kundenportal</h4>
+                    <p className="text-xs text-warmano-gray-400 mt-1">
+                      Sie erhalten in Kürze eine E-Mail mit Ihren Zugangsdaten zum Kundenportal.
+                      Dort können Sie Ihre Verträge, Termine und Rechnungen einsehen.
+                    </p>
+                    <a
+                      href={portalUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 mt-2"
+                    >
+                      Zum Kundenportal
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            <p className="text-sm text-warmano-gray-500 mt-6">
               Eine Bestätigung wurde an <span className="text-warmano-white">{formData.email}</span> gesendet.
             </p>
           </motion.div>

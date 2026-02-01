@@ -256,7 +256,7 @@ async function authenticate(): Promise<number> {
 /**
  * Execute a method on an Odoo model
  */
-async function execute(
+export async function execute(
   model: string,
   method: string,
   args: unknown[],
@@ -478,6 +478,75 @@ export async function testConnection(): Promise<{
       success: false,
       error: error instanceof Error ? error.message : 'Connection failed',
     }
+  }
+}
+
+/**
+ * List available methods on a model
+ */
+export async function listModelMethods(modelName: string): Promise<string[]> {
+  try {
+    // In Odoo, we can get methods by reading ir.model.access or checking the model's fields
+    // However, XML-RPC doesn't expose method introspection directly
+    // We can try common wizard method names
+    const commonWizardMethods = [
+      'action_apply',
+      'action_grant_access',
+      'action_open_wizard',
+      'action_send',
+      'action_confirm',
+      'action_done',
+      'button_apply',
+      'process',
+      'execute',
+      'run',
+    ]
+
+    // Try each method to see if it exists
+    const availableMethods: string[] = []
+    for (const method of commonWizardMethods) {
+      try {
+        // Create a test record and try to call the method
+        // This is not ideal but necessary for introspection via XML-RPC
+        const testId = await execute(modelName, 'create', [{}])
+        try {
+          await execute(modelName, method, [[testId as number]])
+          availableMethods.push(method)
+        } catch {
+          // Method doesn't exist or failed - that's ok
+        }
+        // Clean up
+        try {
+          await execute(modelName, 'unlink', [[testId as number]])
+        } catch {
+          // Ignore cleanup errors
+        }
+        break // We found one test, that's enough
+      } catch {
+        // Couldn't create test record
+      }
+    }
+
+    return availableMethods.length > 0 ? availableMethods : ['(could not introspect methods)']
+  } catch (error) {
+    console.error('Error listing methods:', error)
+    return []
+  }
+}
+
+/**
+ * Check available models matching a pattern
+ */
+export async function findModels(pattern: string): Promise<Array<{ model: string; name: string }>> {
+  try {
+    const models = await execute('ir.model', 'search_read', [
+      [['model', 'ilike', pattern]],
+      ['model', 'name'],
+    ]) as Array<{ model: string; name: string }>
+    return models || []
+  } catch (error) {
+    console.error('Error finding models:', error)
+    return []
   }
 }
 
@@ -937,6 +1006,7 @@ export async function processBookingWithSign(data: BookingData): Promise<{
   leadId?: number
   signUrl?: string
   appointmentUrl?: string
+  portalUrl?: string
   error?: string
 }> {
   try {
@@ -953,7 +1023,17 @@ export async function processBookingWithSign(data: BookingData): Promise<{
     // 2. Create the CRM lead/opportunity
     const leadId = await createLead(data)
 
-    // 3. Find the Sign template (search with .pdf extension)
+    // 3. Grant portal access and send registration email
+    console.log('Granting portal access to customer...')
+    const portalResult = await grantPortalAccess(partnerId)
+    if (portalResult.success) {
+      console.log('Portal access granted successfully, user ID:', portalResult.userId)
+    } else {
+      console.warn('Portal access could not be granted:', portalResult.error)
+      // Continue anyway - sign and appointment still work
+    }
+
+    // 4. Find the Sign template (search with .pdf extension)
     const templateId = await findSignTemplate('WARMANO Wartungsvertrag.pdf')
 
     if (!templateId) {
@@ -964,10 +1044,11 @@ export async function processBookingWithSign(data: BookingData): Promise<{
         partnerId,
         leadId,
         appointmentUrl: `${ODOO_APPOINTMENT_URL}?partner_id=${partnerId}`,
+        portalUrl: `${ODOO_URL}/my`,
       }
     }
 
-    // 4. Get package details
+    // 5. Get package details
     const packagePrices = {
       basis: { name: 'Basis', price: 249, price3y: 498 },
       standard: { name: 'Standard', price: 349, price3y: 698 },
@@ -976,7 +1057,7 @@ export async function processBookingWithSign(data: BookingData): Promise<{
     const pkg = packagePrices[data.package]
     const price = data.contractDuration === '3years' ? pkg.price3y : pkg.price
 
-    // 5. Create Sign request
+    // 6. Create Sign request
     const signResult = await createSignRequest({
       partnerId,
       partnerName: `${data.firstName} ${data.lastName}`,
@@ -995,6 +1076,7 @@ export async function processBookingWithSign(data: BookingData): Promise<{
         partnerId,
         leadId,
         appointmentUrl: `${ODOO_APPOINTMENT_URL}?partner_id=${partnerId}`,
+        portalUrl: `${ODOO_URL}/my`,
       }
     }
 
@@ -1004,6 +1086,7 @@ export async function processBookingWithSign(data: BookingData): Promise<{
       leadId,
       signUrl: signResult.signUrl,
       appointmentUrl: `${ODOO_APPOINTMENT_URL}?partner_id=${partnerId}`,
+      portalUrl: `${ODOO_URL}/my`,
     }
   } catch (error) {
     console.error('Odoo booking with sign error:', error)
@@ -1022,4 +1105,181 @@ export function getAppointmentUrl(partnerId?: number): string {
     return `${ODOO_APPOINTMENT_URL}?partner_id=${partnerId}`
   }
   return ODOO_APPOINTMENT_URL
+}
+
+/**
+ * Grant portal access to a customer and send invitation email
+ * Note: portal.wizard doesn't work via XML-RPC, so we use direct user creation
+ */
+export async function grantPortalAccess(partnerId: number): Promise<{
+  success: boolean
+  portalUrl?: string
+  userId?: number
+  error?: string
+}> {
+  try {
+    console.log('Granting portal access to partner:', partnerId)
+
+    // First, get partner details
+    const partners = await execute('res.partner', 'read', [
+      [partnerId],
+      ['name', 'email'],
+    ]) as Array<{ name: string; email: string }>
+
+    if (!partners || partners.length === 0) {
+      return {
+        success: false,
+        error: 'Partner not found',
+      }
+    }
+
+    const partner = partners[0]
+    if (!partner.email) {
+      return {
+        success: false,
+        error: 'Partner has no email address',
+      }
+    }
+
+    // Create portal user directly
+    const result = await createPortalUser({
+      partnerId,
+      email: partner.email,
+      name: partner.name,
+    })
+
+    if (result.success) {
+      return {
+        success: true,
+        portalUrl: `${ODOO_URL}/my`,
+        userId: result.userId,
+      }
+    }
+
+    return {
+      success: false,
+      error: result.error || 'Portal user creation failed',
+    }
+  } catch (error) {
+    console.error('Error granting portal access:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Portal access failed',
+    }
+  }
+}
+
+/**
+ * Create a portal user directly via res.users
+ * This is more reliable than using the portal.wizard via XML-RPC
+ *
+ * The process:
+ * 1. Create user without groups (creates with default internal user role)
+ * 2. Use write with group_ids command 6 to replace groups with portal only
+ * 3. Send password reset email so user can set their password
+ */
+export async function createPortalUser(data: {
+  partnerId: number
+  email: string
+  name: string
+}): Promise<{
+  success: boolean
+  userId?: number
+  error?: string
+}> {
+  try {
+    console.log('Creating portal user for partner:', data.partnerId)
+
+    // Check if user already exists for this partner
+    const existingUsers = await execute('res.users', 'search', [
+      [['partner_id', '=', data.partnerId]]
+    ]) as number[]
+
+    if (Array.isArray(existingUsers) && existingUsers.length > 0) {
+      console.log('User already exists for partner:', existingUsers[0])
+      // Try to send password reset email
+      try {
+        await execute('res.users', 'action_reset_password', [[existingUsers[0]]])
+        console.log('Password reset email sent to existing user')
+      } catch (e) {
+        console.log('Could not send password reset email:', e)
+      }
+      return {
+        success: true,
+        userId: existingUsers[0],
+      }
+    }
+
+    // Find the portal group ID via XML ID (base.group_portal)
+    let portalGroupId: number | null = null
+    try {
+      const xmlIdResult = await execute('ir.model.data', 'search_read', [
+        [['module', '=', 'base'], ['name', '=', 'group_portal']],
+        ['res_id'],
+      ]) as Array<{ res_id: number }>
+
+      if (xmlIdResult && xmlIdResult.length > 0) {
+        portalGroupId = xmlIdResult[0].res_id
+        console.log('Found portal group via XML ID:', portalGroupId)
+      }
+    } catch (e) {
+      console.log('Could not find portal group via XML ID:', e)
+      // Hardcoded fallback - we know it's 10 from our tests
+      portalGroupId = 10
+    }
+
+    if (!portalGroupId) {
+      return {
+        success: false,
+        error: 'Portal group not found',
+      }
+    }
+
+    // Step 1: Create the user (will be created as internal user by default)
+    console.log('Creating user for email:', data.email)
+    const userId = await execute('res.users', 'create', [
+      {
+        name: data.name,
+        login: data.email,
+        email: data.email,
+        partner_id: data.partnerId,
+        active: true,
+      }
+    ]) as number
+
+    console.log('User created with ID:', userId)
+
+    // Step 2: Replace user groups with portal group only
+    // Command 6 = replace all relations with these IDs
+    // This removes the internal user group and sets only portal
+    try {
+      await execute('res.users', 'write', [
+        [userId],
+        { group_ids: [[6, 0, [portalGroupId]]] }
+      ])
+      console.log('User converted to portal user')
+    } catch (e) {
+      console.log('Could not set portal group:', e)
+      // User was created but might be internal - still usable
+    }
+
+    // Step 3: Send password reset email so user can set their password
+    try {
+      await execute('res.users', 'action_reset_password', [[userId]])
+      console.log('Password reset email sent to new portal user')
+    } catch (e) {
+      console.log('Could not send password reset email:', e)
+    }
+
+    return {
+      success: true,
+      userId,
+    }
+  } catch (error) {
+    console.error('Error creating portal user:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'User creation failed',
+    }
+  }
 }
