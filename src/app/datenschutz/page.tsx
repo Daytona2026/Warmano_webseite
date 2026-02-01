@@ -76,24 +76,73 @@ export default function DatenschutzPage() {
               </p>
             </section>
 
-            {/* 2. Hosting */}
+            {/* 2. Hosting und Datenverarbeitung */}
             <section>
-              <h2 className="text-xl font-semibold text-warmano-white mb-4">2. Hosting</h2>
+              <h2 className="text-xl font-semibold text-warmano-white mb-4">2. Hosting und externe Dienste</h2>
+
+              <h3 className="text-lg font-medium text-warmano-white mt-6 mb-3">Vercel (Hosting)</h3>
               <p>
-                Wir hosten die Inhalte unserer Website bei folgendem Anbieter:
-              </p>
-              <h3 className="text-lg font-medium text-warmano-white mt-6 mb-3">Externes Hosting</h3>
-              <p>
-                Diese Website wird extern gehostet. Die personenbezogenen Daten, die auf dieser Website erfasst
-                werden, werden auf den Servern des Hosters / der Hoster gespeichert. Hierbei kann es sich v. a.
-                um IP-Adressen, Kontaktanfragen, Meta- und Kommunikationsdaten, Vertragsdaten, Kontaktdaten,
-                Namen, Websitezugriffe und sonstige Daten, die über eine Website generiert werden, handeln.
+                Diese Website wird bei Vercel Inc., 340 S Lemon Ave #4133, Walnut, CA 91789, USA gehostet.
+                Vercel ist ein Cloud-Hosting-Dienst, der unsere Website über ein globales Content Delivery
+                Network (CDN) ausliefert.
               </p>
               <p className="mt-2">
-                Das externe Hosting erfolgt zum Zwecke der Vertragserfüllung gegenüber unseren potenziellen und
-                bestehenden Kunden (Art. 6 Abs. 1 lit. b DSGVO) und im Interesse einer sicheren, schnellen und
-                effizienten Bereitstellung unseres Online-Angebots durch einen professionellen Anbieter
-                (Art. 6 Abs. 1 lit. f DSGVO).
+                Bei jedem Zugriff auf unsere Website werden automatisch folgende Daten erfasst und in
+                Server-Logfiles gespeichert:
+              </p>
+              <ul className="list-disc list-inside mt-2 space-y-1">
+                <li>IP-Adresse des anfragenden Rechners</li>
+                <li>Datum und Uhrzeit des Zugriffs</li>
+                <li>Name und URL der abgerufenen Datei</li>
+                <li>Website, von der der Zugriff erfolgt (Referrer-URL)</li>
+                <li>Verwendeter Browser und ggf. Betriebssystem</li>
+              </ul>
+              <p className="mt-2">
+                Vercel ist unter dem EU-US Data Privacy Framework zertifiziert und bietet damit ein angemessenes
+                Datenschutzniveau. Wir haben mit Vercel einen Auftragsverarbeitungsvertrag (Data Processing Agreement)
+                geschlossen.
+              </p>
+              <p className="mt-2">
+                Die Rechtsgrundlage für die Datenverarbeitung ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse
+                an einer sicheren und effizienten Bereitstellung unserer Website).
+              </p>
+              <p className="mt-2">
+                Weitere Informationen finden Sie in der Datenschutzerklärung von Vercel:{' '}
+                <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-warmano-orange hover:underline">
+                  https://vercel.com/legal/privacy-policy
+                </a>
+              </p>
+
+              <h3 className="text-lg font-medium text-warmano-white mt-6 mb-3">Odoo (CRM und Kundenportal)</h3>
+              <p>
+                Für die Verwaltung von Kundenbeziehungen, Buchungen und Verträgen nutzen wir Odoo S.A.,
+                Chaussée de Namur 40, 1367 Grand-Rosière, Belgien. Die bei der Buchung eingegebenen Daten
+                (Name, E-Mail, Telefon, Adresse, Vertragsdaten) werden in Odoo gespeichert und verarbeitet.
+              </p>
+              <p className="mt-2">
+                Odoo ist ein europäischer Anbieter mit Sitz in Belgien. Die Datenverarbeitung erfolgt auf
+                Servern innerhalb der Europäischen Union.
+              </p>
+              <p className="mt-2">
+                Die Rechtsgrundlage für die Datenverarbeitung ist Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung)
+                sowie Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an effizientem Kundenmanagement).
+              </p>
+              <p className="mt-2">
+                Weitere Informationen finden Sie in der Datenschutzerklärung von Odoo:{' '}
+                <a href="https://www.odoo.com/privacy" target="_blank" rel="noopener noreferrer" className="text-warmano-orange hover:underline">
+                  https://www.odoo.com/privacy
+                </a>
+              </p>
+
+              <h3 className="text-lg font-medium text-warmano-white mt-6 mb-3">Odoo LiveChat</h3>
+              <p>
+                Auf unserer Website nutzen wir den LiveChat-Dienst von Odoo, um Ihnen eine direkte
+                Kommunikationsmöglichkeit zu bieten. Bei der Nutzung des Chats werden Ihre Nachrichten
+                sowie ggf. eingegebene Kontaktdaten an Odoo übermittelt und dort gespeichert.
+              </p>
+              <p className="mt-2">
+                Die Rechtsgrundlage ist Art. 6 Abs. 1 lit. a DSGVO (Einwilligung) bei aktiver Nutzung des
+                Chats sowie Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an Kundenservice).
               </p>
             </section>
 
