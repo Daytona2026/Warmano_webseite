@@ -70,10 +70,10 @@ export default function AddressAutocomplete({
       const data = await response.json()
 
       const results: AddressSuggestion[] = data.features
-        .filter((feature: { properties: { type?: string; country?: string } }) => {
+        .filter((feature: { properties: { type?: string; country?: string; countrycode?: string } }) => {
           // Filter for German addresses with street info
           const props = feature.properties
-          return props.country === 'Germany' &&
+          return (props.country === 'Germany' || props.country === 'Deutschland' || props.countrycode === 'DE') &&
                  (props.type === 'house' || props.type === 'street')
         })
         .map((feature: {
