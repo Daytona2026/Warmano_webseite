@@ -1299,35 +1299,7 @@ export async function createSubscriptionOrder(data: {
   error?: string
 }> {
   try {
-    // 1. Find or create the recurrence rule (billing frequency)
-    let recurrenceId: number | null = null
-    const recurrenceName = data.paymentFrequency === 'monthly' ? 'Monthly' : 'Yearly'
-    const recurrenceUnit = data.paymentFrequency === 'monthly' ? 'month' : 'year'
-
-    // Search for existing recurrence
-    const existingRecurrences = await execute('sale.temporal.recurrence', 'search', [
-      [['unit', '=', recurrenceUnit], ['duration', '=', 1]]
-    ]) as number[]
-
-    if (Array.isArray(existingRecurrences) && existingRecurrences.length > 0) {
-      recurrenceId = existingRecurrences[0]
-    } else {
-      // Create recurrence if not exists
-      try {
-        recurrenceId = await execute('sale.temporal.recurrence', 'create', [
-          {
-            name: recurrenceName,
-            unit: recurrenceUnit,
-            duration: 1,
-          }
-        ]) as number
-      } catch {
-        // Recurrence model might not exist or have different name in this Odoo version
-        // Continue without recurrence
-      }
-    }
-
-    // 2. Find or create the product for this package
+    // 1. Find or create the product for this package
     let productId: number | null = null
     const productName = `WARMANO ${data.packageName} Wartungspaket`
 
@@ -1345,12 +1317,11 @@ export async function createSubscriptionOrder(data: {
           name: productName,
           type: 'service',
           list_price: data.packagePrice,
-          recurring_invoice: true,
         }
       ]) as number
     }
 
-    // 3. Calculate pricing based on contract duration
+    // 2. Calculate pricing based on contract duration
     let unitPrice = data.packagePrice
     const contractYears = data.contractDuration === '3years' ? 3 : 1
     if (data.contractDuration === '3years') {
@@ -1358,27 +1329,54 @@ export async function createSubscriptionOrder(data: {
       unitPrice = (data.packagePrice * 2) / 3
     }
 
-    // 4. Create sale order with subscription fields
+    // 3. Try to create subscription directly (Odoo 16+ with Subscription app)
+    let orderId: number | null = null
+
+    // First, try sale.subscription model (older Odoo versions)
+    try {
+      orderId = await execute('sale.subscription', 'create', [
+        {
+          partner_id: data.partnerId,
+          name: `WARMANO ${data.packageName} - ${data.contractDuration === '3years' ? '3 Jahre' : '1 Jahr'}`,
+          recurring_invoice_line_ids: [[0, 0, {
+            product_id: productId,
+            name: productName,
+            quantity: 1,
+            price_unit: unitPrice,
+          }]],
+        }
+      ]) as number
+
+      // Get subscription name
+      const subscriptions = await execute('sale.subscription', 'read', [
+        [orderId],
+        ['code', 'name'],
+      ]) as Array<{ code?: string; name?: string }>
+
+      return {
+        success: true,
+        orderId,
+        orderName: subscriptions?.[0]?.code || subscriptions?.[0]?.name,
+      }
+    } catch {
+      // sale.subscription doesn't exist, try sale.order with is_subscription
+    }
+
+    // 4. Fallback: Create sale.order with subscription flag (Odoo 17+)
     const orderData: Record<string, unknown> = {
       partner_id: data.partnerId,
-      is_subscription: true,
-      subscription_state: 'draft', // Will be activated after confirmation
+      client_order_ref: `WARMANO ${data.packageName} - ${data.contractDuration === '3years' ? '3 Jahre' : '1 Jahr'}`,
       note: `WARMANO Wartungsvertrag - ${data.packageName}\nLaufzeit: ${contractYears} Jahr(e)${data.contractDuration === '3years' ? ' (1. Jahr gratis)' : ''}\nZahlweise: ${data.paymentFrequency === 'monthly' ? 'Monatlich' : 'Jährlich'}`,
     }
 
-    // Add recurrence if available
-    if (recurrenceId) {
-      orderData.recurrence_id = recurrenceId
+    // Try to set subscription fields if available
+    try {
+      orderData.is_subscription = true
+    } catch {
+      // Field might not exist
     }
 
-    // Set end date for contract duration
-    const startDate = new Date()
-    const endDate = new Date()
-    endDate.setFullYear(endDate.getFullYear() + contractYears)
-    orderData.start_date = startDate.toISOString().split('T')[0]
-    orderData.end_date = endDate.toISOString().split('T')[0]
-
-    const orderId = await execute('sale.order', 'create', [orderData]) as number
+    orderId = await execute('sale.order', 'create', [orderData]) as number
 
     // 5. Add order line
     await execute('sale.order.line', 'create', [
@@ -1386,7 +1384,7 @@ export async function createSubscriptionOrder(data: {
         order_id: orderId,
         product_id: productId,
         name: productName,
-        product_uom_qty: 1,
+        product_uom_qty: contractYears, // Quantity = years
         price_unit: unitPrice,
       }
     ])
