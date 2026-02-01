@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Menu, X, Phone, Gift, Sparkles, ArrowRight, LogIn } from 'lucide-react'
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
 import Container from '@/components/ui/Container'
 import Button from '@/components/ui/Button'
+import LanguageSwitcher from '@/components/LanguageSwitcher'
 import { cn } from '@/lib/utils'
 
 const navigation = [
@@ -140,6 +141,7 @@ export default function Header() {
 
           {/* Desktop CTA */}
           <div className="hidden lg:flex items-center gap-4">
+            <LanguageSwitcher />
             <a
               href="tel:+498999951433"
               className="flex items-center gap-2 text-sm text-warmano-gray-400 hover:text-warmano-white transition-colors"
@@ -209,6 +211,9 @@ export default function Header() {
                   <LogIn className="w-5 h-5" />
                   Kundenportal Login
                 </a>
+                <div className="py-3">
+                  <LanguageSwitcher />
+                </div>
                 <Button className="mt-2 shadow-glow-orange" onClick={scrollToBooking}>
                   Jetzt buchen
                 </Button>

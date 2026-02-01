@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import { motion, AnimatePresence, useInView } from 'framer-motion'
 import { Check, ChevronRight, ChevronLeft, MapPin, Calendar, Shield, Clock, CreditCard, Star, Zap, Award, Sparkles, Loader2, Gift, CheckCircle2 } from 'lucide-react'
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
 import Container from '@/components/ui/Container'
 import Button from '@/components/ui/Button'
 import AddressAutocomplete from '@/components/ui/AddressAutocomplete'

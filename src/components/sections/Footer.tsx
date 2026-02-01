@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { MapPin, Phone, Mail, Linkedin, Instagram, Heart } from 'lucide-react'
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
 import Container from '@/components/ui/Container'
 
 const footerLinks = {
