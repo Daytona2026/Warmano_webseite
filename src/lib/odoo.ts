@@ -1299,7 +1299,7 @@ export async function createSubscriptionOrder(data: {
   error?: string
 }> {
   try {
-    // 1. Find or create the product for this package
+    // 1. Find or create the product for this package (must be recurring)
     let productId: number | null = null
     const productName = `WARMANO ${data.packageName} Wartungspaket`
 
@@ -1310,13 +1310,23 @@ export async function createSubscriptionOrder(data: {
 
     if (Array.isArray(existingProducts) && existingProducts.length > 0) {
       productId = existingProducts[0]
+      // Update product to be recurring
+      try {
+        await execute('product.product', 'write', [
+          [productId],
+          { recurring_invoice: true }
+        ])
+      } catch {
+        // Field might not exist in this version
+      }
     } else {
-      // Create product if not exists
+      // Create product with recurring flag
       productId = await execute('product.product', 'create', [
         {
           name: productName,
           type: 'service',
           list_price: data.packagePrice,
+          recurring_invoice: true,
         }
       ]) as number
     }
@@ -1325,71 +1335,69 @@ export async function createSubscriptionOrder(data: {
     let unitPrice = data.packagePrice
     const contractYears = data.contractDuration === '3years' ? 3 : 1
     if (data.contractDuration === '3years') {
-      // First year free - so 2 years for 3 year contract
       unitPrice = (data.packagePrice * 2) / 3
     }
 
-    // 3. Try to create subscription directly (Odoo 16+ with Subscription app)
-    let orderId: number | null = null
+    // 3. Find or create a subscription plan/template
+    let planId: number | null = null
+    const planName = data.paymentFrequency === 'monthly' ? 'Monatlich' : 'Jährlich'
 
-    // First, try sale.subscription model (older Odoo versions)
+    // Try to find existing plan (Odoo 17+ uses sale.subscription.plan)
     try {
-      orderId = await execute('sale.subscription', 'create', [
-        {
-          partner_id: data.partnerId,
-          name: `WARMANO ${data.packageName} - ${data.contractDuration === '3years' ? '3 Jahre' : '1 Jahr'}`,
-          recurring_invoice_line_ids: [[0, 0, {
-            product_id: productId,
-            name: productName,
-            quantity: 1,
-            price_unit: unitPrice,
-          }]],
-        }
-      ]) as number
+      const existingPlans = await execute('sale.subscription.plan', 'search', [
+        [['name', 'ilike', planName]]
+      ]) as number[]
 
-      // Get subscription name
-      const subscriptions = await execute('sale.subscription', 'read', [
-        [orderId],
-        ['code', 'name'],
-      ]) as Array<{ code?: string; name?: string }>
-
-      return {
-        success: true,
-        orderId,
-        orderName: subscriptions?.[0]?.code || subscriptions?.[0]?.name,
+      if (Array.isArray(existingPlans) && existingPlans.length > 0) {
+        planId = existingPlans[0]
+      } else {
+        // Create plan
+        planId = await execute('sale.subscription.plan', 'create', [
+          {
+            name: planName,
+            billing_period_value: 1,
+            billing_period_unit: data.paymentFrequency === 'monthly' ? 'month' : 'year',
+          }
+        ]) as number
       }
     } catch {
-      // sale.subscription doesn't exist, try sale.order with is_subscription
+      // sale.subscription.plan doesn't exist in this version
     }
 
-    // 4. Fallback: Create sale.order with subscription flag (Odoo 17+)
+    // 4. Create the order with subscription settings
     const orderData: Record<string, unknown> = {
       partner_id: data.partnerId,
-      client_order_ref: `WARMANO ${data.packageName} - ${data.contractDuration === '3years' ? '3 Jahre' : '1 Jahr'}`,
-      note: `WARMANO Wartungsvertrag - ${data.packageName}\nLaufzeit: ${contractYears} Jahr(e)${data.contractDuration === '3years' ? ' (1. Jahr gratis)' : ''}\nZahlweise: ${data.paymentFrequency === 'monthly' ? 'Monatlich' : 'Jährlich'}`,
+      is_subscription: true,
+      client_order_ref: `WARMANO ${data.packageName} - ${contractYears} Jahr(e)`,
+      note: `WARMANO Wartungsvertrag\nPaket: ${data.packageName}\nLaufzeit: ${contractYears} Jahr(e)${data.contractDuration === '3years' ? ' (1. Jahr gratis)' : ''}\nZahlweise: ${planName}`,
     }
 
-    // Try to set subscription fields if available
+    // Add plan if found
+    if (planId) {
+      orderData.plan_id = planId
+    }
+
+    const orderId = await execute('sale.order', 'create', [orderData]) as number
+
+    // 5. Add order line with subscription product
+    const lineData: Record<string, unknown> = {
+      order_id: orderId,
+      product_id: productId,
+      name: `${productName} (${planName})`,
+      product_uom_qty: 1,
+      price_unit: unitPrice,
+    }
+
+    await execute('sale.order.line', 'create', [lineData])
+
+    // 6. Confirm the order to activate subscription
     try {
-      orderData.is_subscription = true
+      await execute('sale.order', 'action_confirm', [[orderId]])
     } catch {
-      // Field might not exist
+      // Order might need manual confirmation
     }
 
-    orderId = await execute('sale.order', 'create', [orderData]) as number
-
-    // 5. Add order line
-    await execute('sale.order.line', 'create', [
-      {
-        order_id: orderId,
-        product_id: productId,
-        name: productName,
-        product_uom_qty: contractYears, // Quantity = years
-        price_unit: unitPrice,
-      }
-    ])
-
-    // 6. Get order name
+    // 7. Get order name
     const orders = await execute('sale.order', 'read', [
       [orderId],
       ['name'],
