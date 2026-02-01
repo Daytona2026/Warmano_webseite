@@ -99,6 +99,9 @@ export default function Footer() {
                 <span className="text-warmano-orange">.</span>
               </span>
             </motion.a>
+            <p className="text-warmano-gray-500 text-xs mb-2">
+              Eine Marke der Bavaria Heizungstechnik GmbH
+            </p>
             <p className="text-warmano-gray-400 mb-6 max-w-sm leading-relaxed">
               Professionelle Wärmepumpen-Wartung mit transparenten Preisen, digitalem
               Scheckheft und schnellen Terminen.
@@ -107,14 +110,14 @@ export default function Footer() {
             {/* Contact info with hover effects */}
             <div className="space-y-3">
               <motion.a
-                href="tel:+4989123456789"
+                href="tel:+498999951433"
                 className="flex items-center gap-3 text-warmano-gray-400 hover:text-warmano-orange transition-colors group"
                 whileHover={{ x: 4 }}
               >
                 <div className="w-9 h-9 rounded-lg bg-warmano-gray-800/50 flex items-center justify-center group-hover:bg-warmano-orange/10 transition-colors">
                   <Phone className="w-4 h-4" />
                 </div>
-                <span className="text-sm font-medium">089 123 456 789</span>
+                <span className="text-sm font-medium">089 99 95 14-133</span>
               </motion.a>
               <motion.a
                 href="mailto:info@warmano.de"
@@ -195,8 +198,8 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="mt-16 pt-8 border-t border-warmano-gray-800/50 flex flex-col sm:flex-row justify-between items-center gap-6">
-          <p className="text-sm text-warmano-gray-500 flex items-center gap-1.5">
-            &copy; {new Date().getFullYear()} WARMANO GmbH. Made with
+          <p className="text-sm text-warmano-gray-500 flex items-center gap-1.5 flex-wrap">
+            &copy; {new Date().getFullYear()} Bavaria Heizungstechnik GmbH. Made with
             <Heart className="w-4 h-4 text-red-500 fill-red-500 inline" />
             in München.
           </p>

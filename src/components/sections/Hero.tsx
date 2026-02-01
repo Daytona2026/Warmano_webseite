@@ -324,49 +324,33 @@ export default function Hero() {
                     <ArrowRight className="w-4 h-4 ml-2 relative z-10 group-hover:translate-x-1 transition-transform" />
                   </Button>
 
-                  {/* Trust line */}
-                  <p className="text-center text-xs text-warmano-gray-500 mt-4">
-                    Keine versteckten Kosten • Jederzeit kündbar
-                  </p>
+                  {/* Trust Stats - sauber in einer Reihe */}
+                  <div className="flex items-center justify-between mt-6 pt-6 border-t border-warmano-gray-700/50">
+                    {/* Rating */}
+                    <div className="flex items-center gap-2" ref={ratingRef}>
+                      <div className="flex -space-x-0.5">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className="w-4 h-4 fill-yellow-500 text-yellow-500" />
+                        ))}
+                      </div>
+                      <div>
+                        <span className="text-warmano-white font-bold">{(ratingCount / 10).toFixed(1)}</span>
+                        <span className="text-warmano-gray-500 text-xs ml-1">Bewertung</span>
+                      </div>
+                    </div>
+
+                    {/* Divider */}
+                    <div className="w-px h-8 bg-warmano-gray-700/50" />
+
+                    {/* Customers */}
+                    <div className="text-right" ref={customerRef}>
+                      <span className="text-warmano-white font-bold text-lg">{customerCount}+</span>
+                      <p className="text-warmano-gray-500 text-xs">zufriedene Kunden</p>
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             </div>
-
-            {/* Floating rating badge - OUTSIDE the card */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 1 }}
-              className="absolute -left-16 top-20 bg-warmano-gray-900 backdrop-blur-lg border border-warmano-gray-700 rounded-2xl p-4 shadow-xl z-20"
-            >
-              <div className="flex items-center gap-3" ref={ratingRef}>
-                <div className="flex -space-x-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-yellow-500 text-yellow-500" />
-                  ))}
-                </div>
-                <div>
-                  <p className="text-warmano-white font-bold text-lg leading-none">
-                    {(ratingCount / 10).toFixed(1)}
-                  </p>
-                  <p className="text-warmano-gray-500 text-xs">Bewertung</p>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Floating customer count - OUTSIDE the card */}
-            <motion.div
-              ref={customerRef}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 1.2 }}
-              className="absolute -right-12 bottom-20 bg-warmano-gray-900 backdrop-blur-lg border border-warmano-gray-700 rounded-2xl p-4 shadow-xl z-20"
-            >
-              <p className="text-warmano-white font-bold text-2xl leading-none">
-                {customerCount}+
-              </p>
-              <p className="text-warmano-gray-500 text-xs">zufriedene Kunden</p>
-            </motion.div>
           </motion.div>
         </div>
 

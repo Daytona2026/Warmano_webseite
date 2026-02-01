@@ -110,13 +110,13 @@ export default function CTASection() {
                     <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Button>
                   <a
-                    href="tel:+4989123456789"
+                    href="tel:+498999951433"
                     className="inline-flex items-center justify-center gap-3 px-6 py-4 text-warmano-gray-300 hover:text-warmano-orange transition-colors group"
                   >
                     <div className="w-10 h-10 rounded-xl bg-warmano-gray-800/50 border border-warmano-gray-700/50 flex items-center justify-center group-hover:bg-warmano-orange/10 group-hover:border-warmano-orange/30 transition-all">
                       <Phone className="w-5 h-5" />
                     </div>
-                    <span className="font-medium">089 123 456 789</span>
+                    <span className="font-medium">089 99 95 14-133</span>
                   </a>
                 </motion.div>
 

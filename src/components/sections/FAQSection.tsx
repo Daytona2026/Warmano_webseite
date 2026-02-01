@@ -183,11 +183,11 @@ export default function FAQSection() {
                   Noch Fragen? Wir helfen gerne!
                 </p>
                 <a
-                  href="tel:+4989123456789"
+                  href="tel:+498999951433"
                   className="inline-flex items-center gap-2 text-warmano-orange font-semibold hover:underline text-lg"
                 >
                   <Phone className="w-4 h-4" />
-                  089 123 456 789
+                  089 99 95 14-133
                 </a>
               </div>
             </div>
