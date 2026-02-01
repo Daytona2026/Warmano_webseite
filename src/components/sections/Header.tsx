@@ -97,8 +97,12 @@ export default function Header() {
 
                 {/* CTA Button */}
                 <button
-                  onClick={scrollToPricing}
-                  className="hidden md:flex items-center gap-1 bg-white/20 hover:bg-white/30 px-2.5 py-1 rounded-full text-xs font-semibold transition-all group"
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    scrollToPricing()
+                  }}
+                  className="hidden md:flex items-center gap-1 bg-white/20 hover:bg-white/30 px-2.5 py-1 rounded-full text-xs font-semibold transition-all group cursor-pointer"
                 >
                   Sichern
                   <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
@@ -106,8 +110,12 @@ export default function Header() {
 
                 {/* Close Button */}
                 <button
-                  onClick={() => setShowBanner(false)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-white/20 rounded-full transition-colors"
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    setShowBanner(false)
+                  }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-white/20 rounded-full transition-colors cursor-pointer"
                   aria-label="Banner schließen"
                 >
                   <X className="w-3.5 h-3.5" />
@@ -133,8 +141,12 @@ export default function Header() {
               item.isSection ? (
                 <button
                   key={item.name}
-                  onClick={() => scrollToSection(item.href)}
-                  className="text-sm font-medium text-warmano-gray-400 hover:text-warmano-white transition-colors"
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    scrollToSection(item.href)
+                  }}
+                  className="text-sm font-medium text-warmano-gray-400 hover:text-warmano-white transition-colors cursor-pointer"
                 >
                   {item.name}
                 </button>
@@ -175,8 +187,12 @@ export default function Header() {
 
           {/* Mobile Menu Button */}
           <button
-            className="lg:hidden p-2 text-warmano-gray-400 hover:text-warmano-white transition-colors"
-            onClick={() => setIsOpen(!isOpen)}
+            type="button"
+            className="lg:hidden p-2 text-warmano-gray-400 hover:text-warmano-white transition-colors cursor-pointer"
+            onClick={(e) => {
+              e.preventDefault()
+              setIsOpen(!isOpen)
+            }}
             aria-label="Menü"
           >
             {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -199,8 +215,12 @@ export default function Header() {
                   item.isSection ? (
                     <button
                       key={item.name}
-                      onClick={() => scrollToSection(item.href)}
-                      className="py-3 text-left text-warmano-gray-300 hover:text-warmano-white transition-colors"
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        scrollToSection(item.href)
+                      }}
+                      className="py-3 text-left text-warmano-gray-300 hover:text-warmano-white transition-colors cursor-pointer"
                     >
                       {item.name}
                     </button>
