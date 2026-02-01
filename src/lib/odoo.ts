@@ -1801,3 +1801,234 @@ export async function getLiveChatConfig(): Promise<{
     }
   }
 }
+
+// ============================================
+// BLOG FUNCTIONS
+// ============================================
+
+export interface BlogPost {
+  id: number
+  name: string
+  subtitle?: string
+  content: string
+  website_meta_title?: string
+  website_meta_description?: string
+  create_date: string
+  write_date: string
+  published_date?: string
+  author_name?: string
+  author_avatar?: string
+  cover_image?: string
+  tag_ids?: Array<{ id: number; name: string }>
+  slug: string
+  is_published: boolean
+}
+
+/**
+ * Get all published blog posts
+ */
+export async function getBlogPosts(limit: number = 50, offset: number = 0): Promise<{
+  success: boolean
+  posts?: BlogPost[]
+  total?: number
+  error?: string
+}> {
+  try {
+    // Get total count
+    const totalCount = await execute('blog.post', 'search_count', [
+      [['is_published', '=', true], ['website_published', '=', true]]
+    ]) as number
+
+    // Get blog posts
+    const posts = await execute('blog.post', 'search_read', [
+      [['is_published', '=', true], ['website_published', '=', true]],
+      [
+        'id',
+        'name',
+        'subtitle',
+        'content',
+        'website_meta_title',
+        'website_meta_description',
+        'create_date',
+        'write_date',
+        'published_date',
+        'author_id',
+        'tag_ids',
+        'website_url',
+      ],
+      offset,
+      limit,
+      'published_date desc',
+    ]) as Array<{
+      id: number
+      name: string
+      subtitle?: string
+      content: string
+      website_meta_title?: string
+      website_meta_description?: string
+      create_date: string
+      write_date: string
+      published_date?: string
+      author_id?: [number, string]
+      tag_ids?: number[]
+      website_url?: string
+    }>
+
+    if (!Array.isArray(posts)) {
+      return { success: true, posts: [], total: 0 }
+    }
+
+    // Get tag names if there are any tags
+    const allTagIds = Array.from(new Set(posts.flatMap(p => p.tag_ids || [])))
+    let tagMap: Record<number, string> = {}
+
+    if (allTagIds.length > 0) {
+      const tags = await execute('blog.tag', 'search_read', [
+        [['id', 'in', allTagIds]],
+        ['id', 'name'],
+      ]) as Array<{ id: number; name: string }>
+
+      if (Array.isArray(tags)) {
+        tagMap = Object.fromEntries(tags.map(t => [t.id, t.name]))
+      }
+    }
+
+    const formattedPosts: BlogPost[] = posts.map(post => ({
+      id: post.id,
+      name: post.name,
+      subtitle: post.subtitle,
+      content: post.content,
+      website_meta_title: post.website_meta_title,
+      website_meta_description: post.website_meta_description,
+      create_date: post.create_date,
+      write_date: post.write_date,
+      published_date: post.published_date,
+      author_name: post.author_id ? post.author_id[1] : undefined,
+      tag_ids: (post.tag_ids || []).map(id => ({ id, name: tagMap[id] || '' })),
+      slug: post.website_url?.replace('/blog/', '').replace(/^\//, '') || `post-${post.id}`,
+      is_published: true,
+    }))
+
+    return {
+      success: true,
+      posts: formattedPosts,
+      total: totalCount,
+    }
+  } catch (error) {
+    console.error('Error fetching blog posts:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch blog posts',
+    }
+  }
+}
+
+/**
+ * Get a single blog post by slug or ID
+ */
+export async function getBlogPost(slugOrId: string): Promise<{
+  success: boolean
+  post?: BlogPost
+  error?: string
+}> {
+  try {
+    // Try to find by website_url first, then by ID
+    const isNumeric = /^\d+$/.test(slugOrId)
+
+    let searchDomain: unknown[]
+    if (isNumeric) {
+      searchDomain = [['id', '=', parseInt(slugOrId, 10)]]
+    } else {
+      // Search by slug in website_url - use OR condition
+      searchDomain = [
+        '|',
+        ['website_url', 'ilike', `/${slugOrId}`],
+        ['website_url', 'ilike', `/blog/${slugOrId}`],
+      ]
+    }
+
+    const posts = await execute('blog.post', 'search_read', [
+      searchDomain,
+      [
+        'id',
+        'name',
+        'subtitle',
+        'content',
+        'website_meta_title',
+        'website_meta_description',
+        'create_date',
+        'write_date',
+        'published_date',
+        'author_id',
+        'tag_ids',
+        'website_url',
+        'is_published',
+        'website_published',
+      ],
+      0,
+      1,
+    ]) as Array<{
+      id: number
+      name: string
+      subtitle?: string
+      content: string
+      website_meta_title?: string
+      website_meta_description?: string
+      create_date: string
+      write_date: string
+      published_date?: string
+      author_id?: [number, string]
+      tag_ids?: number[]
+      website_url?: string
+      is_published: boolean
+      website_published: boolean
+    }>
+
+    if (!Array.isArray(posts) || posts.length === 0) {
+      return {
+        success: false,
+        error: 'Blog post not found',
+      }
+    }
+
+    const post = posts[0]
+
+    // Get tag names
+    let tags: Array<{ id: number; name: string }> = []
+    if (post.tag_ids && post.tag_ids.length > 0) {
+      const tagData = await execute('blog.tag', 'search_read', [
+        [['id', 'in', post.tag_ids]],
+        ['id', 'name'],
+      ]) as Array<{ id: number; name: string }>
+
+      if (Array.isArray(tagData)) {
+        tags = tagData
+      }
+    }
+
+    return {
+      success: true,
+      post: {
+        id: post.id,
+        name: post.name,
+        subtitle: post.subtitle,
+        content: post.content,
+        website_meta_title: post.website_meta_title,
+        website_meta_description: post.website_meta_description,
+        create_date: post.create_date,
+        write_date: post.write_date,
+        published_date: post.published_date,
+        author_name: post.author_id ? post.author_id[1] : undefined,
+        tag_ids: tags,
+        slug: post.website_url?.replace('/blog/', '').replace(/^\//, '') || `post-${post.id}`,
+        is_published: post.is_published && post.website_published,
+      },
+    }
+  } catch (error) {
+    console.error('Error fetching blog post:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch blog post',
+    }
+  }
+}

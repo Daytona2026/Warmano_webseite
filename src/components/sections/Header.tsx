@@ -9,11 +9,11 @@ import Button from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
 
 const navigation = [
-  { name: 'So funktioniert\'s', href: 'services' },
-  { name: 'Preise', href: 'pricing' },
-  { name: 'Empfehlen', href: 'referral' },
-  { name: 'FAQ', href: 'faq' },
-  { name: 'Kontakt', href: 'contact' },
+  { name: 'So funktioniert\'s', href: 'services', isSection: true },
+  { name: 'Preise', href: 'pricing', isSection: true },
+  { name: 'Blog', href: '/blog', isSection: false },
+  { name: 'FAQ', href: 'faq', isSection: true },
+  { name: 'Kontakt', href: 'contact', isSection: true },
 ]
 
 export default function Header() {
@@ -129,13 +129,23 @@ export default function Header() {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-8">
             {navigation.map((item) => (
-              <button
-                key={item.name}
-                onClick={() => scrollToSection(item.href)}
-                className="text-sm font-medium text-warmano-gray-400 hover:text-warmano-white transition-colors"
-              >
-                {item.name}
-              </button>
+              item.isSection ? (
+                <button
+                  key={item.name}
+                  onClick={() => scrollToSection(item.href)}
+                  className="text-sm font-medium text-warmano-gray-400 hover:text-warmano-white transition-colors"
+                >
+                  {item.name}
+                </button>
+              ) : (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className="text-sm font-medium text-warmano-gray-400 hover:text-warmano-white transition-colors"
+                >
+                  {item.name}
+                </Link>
+              )
             ))}
           </div>
 
@@ -185,13 +195,24 @@ export default function Header() {
             <Container className="py-4">
               <div className="flex flex-col gap-1">
                 {navigation.map((item) => (
-                  <button
-                    key={item.name}
-                    onClick={() => scrollToSection(item.href)}
-                    className="py-3 text-left text-warmano-gray-300 hover:text-warmano-white transition-colors"
-                  >
-                    {item.name}
-                  </button>
+                  item.isSection ? (
+                    <button
+                      key={item.name}
+                      onClick={() => scrollToSection(item.href)}
+                      className="py-3 text-left text-warmano-gray-300 hover:text-warmano-white transition-colors"
+                    >
+                      {item.name}
+                    </button>
+                  ) : (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      onClick={() => setIsOpen(false)}
+                      className="py-3 text-left text-warmano-gray-300 hover:text-warmano-white transition-colors"
+                    >
+                      {item.name}
+                    </Link>
+                  )
                 ))}
                 <hr className="my-2 border-warmano-gray-800" />
                 <a
