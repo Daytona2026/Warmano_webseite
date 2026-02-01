@@ -613,7 +613,6 @@ export async function getTemplateRoleIds(templateId: number): Promise<number[]> 
       signItemIds = rawIds
     }
 
-    console.log('Found sign item IDs:', signItemIds)
 
     if (signItemIds.length === 0) {
       return []
@@ -629,7 +628,6 @@ export async function getTemplateRoleIds(templateId: number): Promise<number[]> 
           ['responsible_id'],
         ]) as Array<{ responsible_id?: unknown }>
 
-        console.log(`Sign item ${itemId} response:`, JSON.stringify(items))
 
         if (items && items[0]) {
           const respId = items[0].responsible_id
@@ -646,11 +644,9 @@ export async function getTemplateRoleIds(templateId: number): Promise<number[]> 
           }
         }
       } catch (e) {
-        console.log(`Error reading sign item ${itemId}:`, e)
       }
     }
 
-    console.log('Found role IDs:', Array.from(roleIds))
     return Array.from(roleIds)
   } catch (error) {
     console.error('Error getting template role IDs:', error)
@@ -805,13 +801,11 @@ export async function createSignRequest(data: {
   try {
     // Get the actual role IDs used in this template
     const templateRoleIds = await getTemplateRoleIds(data.templateId)
-    console.log('Template role IDs for signing:', templateRoleIds)
 
     // Use the found role IDs, or fall back to role 7 (Unterzeichner 1 for this template)
     const roleId = templateRoleIds.length > 0 ? templateRoleIds[0] : 7
 
     // Create the sign.request directly
-    console.log('Creating sign.request directly...')
 
     const signRequestId = await execute('sign.request', 'create', [
       {
@@ -824,7 +818,6 @@ export async function createSignRequest(data: {
       },
     ]) as number
 
-    console.log('Created sign.request with ID:', signRequestId)
 
     if (!signRequestId || signRequestId <= 0) {
       return {
@@ -836,9 +829,7 @@ export async function createSignRequest(data: {
     // Send the sign request to generate access tokens
     try {
       await execute('sign.request', 'action_sent', [[signRequestId]])
-      console.log('Sign request sent successfully')
     } catch (e) {
-      console.log('action_sent failed (might not be required):', e)
     }
 
     // Get the sign request item to retrieve the access token
@@ -848,7 +839,6 @@ export async function createSignRequest(data: {
         ['access_token', 'partner_id'],
       ]) as Array<{ id: number; access_token?: string }>
 
-      console.log('Request items:', JSON.stringify(requestItems))
 
       if (requestItems && requestItems.length > 0) {
         // Parse access_token from the response
@@ -874,7 +864,6 @@ export async function createSignRequest(data: {
         }
       }
     } catch (e) {
-      console.log('Could not get request items:', e)
     }
 
     // Fallback: try to get access_token from the sign.request itself
@@ -897,7 +886,6 @@ export async function createSignRequest(data: {
         }
       }
     } catch (e) {
-      console.log('Could not get sign request access token:', e)
     }
 
     // Final fallback - use portal URL
@@ -1024,10 +1012,8 @@ export async function processBookingWithSign(data: BookingData): Promise<{
     const leadId = await createLead(data)
 
     // 3. Grant portal access and send registration email
-    console.log('Granting portal access to customer...')
     const portalResult = await grantPortalAccess(partnerId)
     if (portalResult.success) {
-      console.log('Portal access granted successfully, user ID:', portalResult.userId)
     } else {
       console.warn('Portal access could not be granted:', portalResult.error)
       // Continue anyway - sign and appointment still work
@@ -1041,7 +1027,6 @@ export async function processBookingWithSign(data: BookingData): Promise<{
     }
     const pkgForSub = packagePricesForSub[data.package]
 
-    console.log('Creating subscription order...')
     const subscriptionResult = await createSubscriptionOrder({
       partnerId,
       packageName: pkgForSub.name,
@@ -1050,7 +1035,6 @@ export async function processBookingWithSign(data: BookingData): Promise<{
       paymentFrequency: data.paymentFrequency,
     })
     if (subscriptionResult.success) {
-      console.log('Subscription order created:', subscriptionResult.orderName)
     } else {
       console.warn('Subscription order failed:', subscriptionResult.error)
       // Continue anyway
@@ -1141,7 +1125,6 @@ export async function grantPortalAccess(partnerId: number): Promise<{
   error?: string
 }> {
   try {
-    console.log('Granting portal access to partner:', partnerId)
 
     // First, get partner details
     const partners = await execute('res.partner', 'read', [
@@ -1211,7 +1194,6 @@ export async function createPortalUser(data: {
   error?: string
 }> {
   try {
-    console.log('Creating portal user for partner:', data.partnerId)
 
     // Check if user already exists for this partner
     const existingUsers = await execute('res.users', 'search', [
@@ -1219,13 +1201,10 @@ export async function createPortalUser(data: {
     ]) as number[]
 
     if (Array.isArray(existingUsers) && existingUsers.length > 0) {
-      console.log('User already exists for partner:', existingUsers[0])
       // Try to send password reset email
       try {
         await execute('res.users', 'action_reset_password', [[existingUsers[0]]])
-        console.log('Password reset email sent to existing user')
       } catch (e) {
-        console.log('Could not send password reset email:', e)
       }
       return {
         success: true,
@@ -1243,10 +1222,8 @@ export async function createPortalUser(data: {
 
       if (xmlIdResult && xmlIdResult.length > 0) {
         portalGroupId = xmlIdResult[0].res_id
-        console.log('Found portal group via XML ID:', portalGroupId)
       }
     } catch (e) {
-      console.log('Could not find portal group via XML ID:', e)
       // Hardcoded fallback - we know it's 10 from our tests
       portalGroupId = 10
     }
@@ -1259,7 +1236,6 @@ export async function createPortalUser(data: {
     }
 
     // Step 1: Create the user (will be created as internal user by default)
-    console.log('Creating user for email:', data.email)
     const userId = await execute('res.users', 'create', [
       {
         name: data.name,
@@ -1270,7 +1246,6 @@ export async function createPortalUser(data: {
       }
     ]) as number
 
-    console.log('User created with ID:', userId)
 
     // Step 2: Replace user groups with portal group only
     // Command 6 = replace all relations with these IDs
@@ -1280,18 +1255,15 @@ export async function createPortalUser(data: {
         [userId],
         { group_ids: [[6, 0, [portalGroupId]]] }
       ])
-      console.log('User converted to portal user')
     } catch (e) {
-      console.log('Could not set portal group:', e)
       // User was created but might be internal - still usable
     }
 
     // Step 3: Send password reset email so user can set their password
     try {
       await execute('res.users', 'action_reset_password', [[userId]])
-      console.log('Password reset email sent to new portal user')
-    } catch (e) {
-      console.log('Could not send password reset email:', e)
+    } catch {
+      // Silently ignore - password reset email is optional
     }
 
     return {
@@ -1327,7 +1299,6 @@ export async function createSubscriptionOrder(data: {
   error?: string
 }> {
   try {
-    console.log('Creating subscription order for partner:', data.partnerId)
 
     // Find or create the product for this package
     let productId: number | null = null
@@ -1385,7 +1356,6 @@ export async function createSubscriptionOrder(data: {
       ['name'],
     ]) as Array<{ name: string }>
 
-    console.log('Subscription order created:', orderId)
 
     return {
       success: true,
@@ -1424,7 +1394,6 @@ export async function createHelpdeskTicket(data: HelpdeskTicketData): Promise<{
   error?: string
 }> {
   try {
-    console.log('Creating helpdesk ticket for:', data.partnerEmail)
 
     // Find or create partner
     let partnerId = data.partnerId
@@ -1470,7 +1439,6 @@ export async function createHelpdeskTicket(data: HelpdeskTicketData): Promise<{
       ['ticket_ref', 'name'],
     ]) as Array<{ ticket_ref?: string; name: string }>
 
-    console.log('Helpdesk ticket created:', ticketId)
 
     return {
       success: true,
@@ -1645,7 +1613,6 @@ export async function createReferralLead(data: {
   error?: string
 }> {
   try {
-    console.log('Creating referral lead from:', data.referrerEmail)
 
     // Find referrer partner
     const referrers = await execute('res.partner', 'search', [
@@ -1667,7 +1634,6 @@ export async function createReferralLead(data: {
       }
     ]) as number
 
-    console.log('Referral lead created:', leadId)
 
     return {
       success: true,

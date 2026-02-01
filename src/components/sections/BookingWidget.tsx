@@ -138,9 +138,9 @@ export default function BookingWidget() {
 
   // Validation helpers
   const isStep1Valid = formData.brand !== ''
-  const isStep2Valid = formData.plz.length >= 4 && formData.city !== '' && formData.street !== ''
+  const isStep2Valid = /^\d{5}$/.test(formData.plz) && formData.city !== '' && formData.street !== ''
   const isStep3Valid = formData.date !== '' && formData.time !== ''
-  const isStep4Valid = formData.firstName !== '' && formData.lastName !== '' && formData.email.includes('@') && formData.phone !== '' && formData.agbAccepted
+  const isStep4Valid = formData.firstName !== '' && formData.lastName !== '' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) && formData.phone.length >= 6 && formData.agbAccepted
 
   // Handle form submission
   const handleSubmit = async () => {

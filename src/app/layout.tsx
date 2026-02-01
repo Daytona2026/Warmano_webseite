@@ -12,6 +12,7 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://warmano.de'),
   title: 'WARMANO | Professionelle Wärmepumpen-Wartung & Service',
   description: 'Ihr Partner für Wärmepumpen-Wartung in München. Transparente Festpreise, digitales Scheckheft, schnelle Termine. Ab 249€/Jahr als Subscription.',
   keywords: ['Wärmepumpe', 'Wartung', 'Service', 'München', 'Bayern', 'Heizung', 'Subscription', 'Festpreis'],
