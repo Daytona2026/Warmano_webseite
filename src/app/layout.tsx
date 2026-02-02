@@ -58,6 +58,11 @@ export default function RootLayout({
   return (
     <html lang="de" className={inter.variable}>
       <head>
+        {/* Preconnect for third-party domains to reduce latency */}
+        <link rel="preconnect" href="https://warmano.odoo.com" />
+        <link rel="dns-prefetch" href="https://warmano.odoo.com" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <StructuredData />
       </head>
       <body className="font-sans antialiased">
