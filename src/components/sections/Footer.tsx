@@ -99,7 +99,7 @@ export default function Footer() {
                 <span className="text-warmano-orange">.</span>
               </span>
             </motion.a>
-            <p className="text-warmano-gray-500 text-xs mb-2">
+            <p className="text-warmano-gray-400 text-xs mb-2">
               Eine Marke der Bavaria Heizungstechnik GmbH
             </p>
             <p className="text-warmano-gray-400 mb-6 max-w-sm leading-relaxed">
@@ -198,7 +198,7 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="mt-16 pt-8 border-t border-warmano-gray-800/50 flex flex-col sm:flex-row justify-between items-center gap-6">
-          <p className="text-sm text-warmano-gray-500 flex items-center gap-1.5 flex-wrap">
+          <p className="text-sm text-warmano-gray-400 flex items-center gap-1.5 flex-wrap">
             &copy; {new Date().getFullYear()} Bavaria Heizungstechnik GmbH. Made with
             <Heart className="w-4 h-4 text-red-500 fill-red-500 inline" />
             in München.

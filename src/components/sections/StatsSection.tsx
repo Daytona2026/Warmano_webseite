@@ -63,7 +63,7 @@ export default function StatsSection() {
                 <div className="text-sm font-semibold text-warmano-white mb-1">
                   {stat.label}
                 </div>
-                <div className="text-xs text-warmano-gray-500 uppercase tracking-wide">
+                <div className="text-xs text-warmano-gray-400 uppercase tracking-wide">
                   {stat.description}
                 </div>
               </div>
@@ -72,7 +72,7 @@ export default function StatsSection() {
         </div>
 
         <AnimatedSection delay={0.4} className="mt-8 text-center">
-          <p className="text-sm text-warmano-gray-500">
+          <p className="text-sm text-warmano-gray-400">
             * Diese Zielwerte werden im Pilot (100+ Verträge) mit echten Daten belegt.
           </p>
         </AnimatedSection>

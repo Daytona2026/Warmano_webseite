@@ -192,7 +192,7 @@ export default function TestimonialsSection() {
                   </div>
                   <div>
                     <p className="font-medium text-warmano-white text-sm">{testimonial.name}</p>
-                    <p className="text-xs text-warmano-gray-500">{testimonial.location}</p>
+                    <p className="text-xs text-warmano-gray-400">{testimonial.location}</p>
                     <p className="text-xs text-warmano-orange">{testimonial.device}</p>
                   </div>
                 </div>
@@ -230,7 +230,7 @@ export default function TestimonialsSection() {
                   </div>
                   <div>
                     <p className="font-medium text-warmano-white">{testimonials[currentIndex].name}</p>
-                    <p className="text-sm text-warmano-gray-500">
+                    <p className="text-sm text-warmano-gray-400">
                       {testimonials[currentIndex].location}
                     </p>
                     <p className="text-sm text-warmano-orange">{testimonials[currentIndex].device}</p>

@@ -77,7 +77,7 @@ export default function PricingComparison() {
                     >
                       <div className="text-warmano-gray-400 text-sm mb-2 font-medium">Basis</div>
                       <div className="text-3xl font-bold text-warmano-white">249€</div>
-                      <div className="text-warmano-gray-500 text-xs">/Jahr</div>
+                      <div className="text-warmano-gray-400 text-xs">/Jahr</div>
                     </motion.div>
                   </th>
                   <th className="p-4 text-center w-[25%]">
@@ -94,7 +94,7 @@ export default function PricingComparison() {
                       </div>
                       <div className="text-warmano-orange text-sm font-semibold mb-2">Standard</div>
                       <div className="text-3xl font-bold text-warmano-white">349€</div>
-                      <div className="text-warmano-gray-500 text-xs">/Jahr</div>
+                      <div className="text-warmano-gray-400 text-xs">/Jahr</div>
                     </motion.div>
                   </th>
                   <th className="p-4 text-center w-[20%]">
@@ -106,7 +106,7 @@ export default function PricingComparison() {
                     >
                       <div className="text-warmano-gray-400 text-sm mb-2 font-medium">Premium</div>
                       <div className="text-3xl font-bold text-warmano-white">499€</div>
-                      <div className="text-warmano-gray-500 text-xs">/Jahr</div>
+                      <div className="text-warmano-gray-400 text-xs">/Jahr</div>
                     </motion.div>
                   </th>
                 </tr>

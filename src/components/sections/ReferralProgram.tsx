@@ -164,15 +164,16 @@ export default function ReferralProgram() {
               ) : (
                 <form onSubmit={handleSubmitReferral} className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-warmano-gray-300 mb-2">
+                    <label htmlFor="referrer-email" className="block text-sm font-medium text-warmano-gray-300 mb-2">
                       Ihre E-Mail (als Empfehler) *
                     </label>
                     <input
+                      id="referrer-email"
                       type="email"
                       required
                       value={formData.referrerEmail}
                       onChange={(e) => setFormData({ ...formData, referrerEmail: e.target.value })}
-                      className="w-full px-4 py-3 bg-warmano-gray-800 border border-warmano-gray-700 rounded-xl text-white placeholder-warmano-gray-500 focus:outline-none focus:border-warmano-orange transition-colors"
+                      className="w-full px-4 py-3 bg-warmano-gray-800 border border-warmano-gray-700 rounded-xl text-white placeholder-warmano-gray-400 focus:outline-none focus:border-warmano-orange transition-colors"
                       placeholder="ihre@email.de"
                     />
                   </div>
@@ -182,42 +183,45 @@ export default function ReferralProgram() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-sm font-medium text-warmano-gray-300 mb-2">
+                        <label htmlFor="referred-name" className="block text-sm font-medium text-warmano-gray-300 mb-2">
                           Name *
                         </label>
                         <input
+                          id="referred-name"
                           type="text"
                           required
                           value={formData.referredName}
                           onChange={(e) => setFormData({ ...formData, referredName: e.target.value })}
-                          className="w-full px-4 py-3 bg-warmano-gray-800 border border-warmano-gray-700 rounded-xl text-white placeholder-warmano-gray-500 focus:outline-none focus:border-warmano-orange transition-colors"
+                          className="w-full px-4 py-3 bg-warmano-gray-800 border border-warmano-gray-700 rounded-xl text-white placeholder-warmano-gray-400 focus:outline-none focus:border-warmano-orange transition-colors"
                           placeholder="Name Ihres Freundes"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-warmano-gray-300 mb-2">
+                        <label htmlFor="referred-email" className="block text-sm font-medium text-warmano-gray-300 mb-2">
                           E-Mail *
                         </label>
                         <input
+                          id="referred-email"
                           type="email"
                           required
                           value={formData.referredEmail}
                           onChange={(e) => setFormData({ ...formData, referredEmail: e.target.value })}
-                          className="w-full px-4 py-3 bg-warmano-gray-800 border border-warmano-gray-700 rounded-xl text-white placeholder-warmano-gray-500 focus:outline-none focus:border-warmano-orange transition-colors"
+                          className="w-full px-4 py-3 bg-warmano-gray-800 border border-warmano-gray-700 rounded-xl text-white placeholder-warmano-gray-400 focus:outline-none focus:border-warmano-orange transition-colors"
                           placeholder="freund@email.de"
                         />
                       </div>
                     </div>
 
                     <div className="mt-6">
-                      <label className="block text-sm font-medium text-warmano-gray-300 mb-2">
+                      <label htmlFor="referred-phone" className="block text-sm font-medium text-warmano-gray-300 mb-2">
                         Telefon (optional)
                       </label>
                       <input
+                        id="referred-phone"
                         type="tel"
                         value={formData.referredPhone}
                         onChange={(e) => setFormData({ ...formData, referredPhone: e.target.value })}
-                        className="w-full px-4 py-3 bg-warmano-gray-800 border border-warmano-gray-700 rounded-xl text-white placeholder-warmano-gray-500 focus:outline-none focus:border-warmano-orange transition-colors"
+                        className="w-full px-4 py-3 bg-warmano-gray-800 border border-warmano-gray-700 rounded-xl text-white placeholder-warmano-gray-400 focus:outline-none focus:border-warmano-orange transition-colors"
                         placeholder="+49 123 456789"
                       />
                     </div>
@@ -297,15 +301,16 @@ export default function ReferralProgram() {
               ) : (
                 <form onSubmit={handleGetStats} className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-warmano-gray-300 mb-2">
+                    <label htmlFor="stats-email" className="block text-sm font-medium text-warmano-gray-300 mb-2">
                       Ihre E-Mail *
                     </label>
                     <input
+                      id="stats-email"
                       type="email"
                       required
                       value={statsEmail}
                       onChange={(e) => setStatsEmail(e.target.value)}
-                      className="w-full px-4 py-3 bg-warmano-gray-800 border border-warmano-gray-700 rounded-xl text-white placeholder-warmano-gray-500 focus:outline-none focus:border-warmano-orange transition-colors"
+                      className="w-full px-4 py-3 bg-warmano-gray-800 border border-warmano-gray-700 rounded-xl text-white placeholder-warmano-gray-400 focus:outline-none focus:border-warmano-orange transition-colors"
                       placeholder="ihre@email.de"
                     />
                   </div>

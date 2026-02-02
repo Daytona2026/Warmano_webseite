@@ -333,7 +333,7 @@ export default function Hero() {
                       </div>
                       <div>
                         <span className="text-warmano-white font-bold">{(ratingCount / 10).toFixed(1)}</span>
-                        <span className="text-warmano-gray-500 text-xs ml-1">Bewertung</span>
+                        <span className="text-warmano-gray-400 text-xs ml-1">Bewertung</span>
                       </div>
                     </div>
 
@@ -343,7 +343,7 @@ export default function Hero() {
                     {/* Customers */}
                     <div className="text-right" ref={customerRef}>
                       <span className="text-warmano-white font-bold text-lg">{customerCount}+</span>
-                      <p className="text-warmano-gray-500 text-xs">zufriedene Kunden</p>
+                      <p className="text-warmano-gray-400 text-xs">zufriedene Kunden</p>
                     </div>
                   </div>
                 </div>

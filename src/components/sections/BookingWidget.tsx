@@ -297,7 +297,7 @@ export default function BookingWidget() {
               </div>
             </motion.div>
 
-            <p className="text-sm text-warmano-gray-500 mt-6">
+            <p className="text-sm text-warmano-gray-400 mt-6">
               Eine Bestätigung wurde an <span className="text-warmano-white">{formData.email}</span> gesendet.
             </p>
           </motion.div>
@@ -514,7 +514,7 @@ export default function BookingWidget() {
 
                               <div className="text-right">
                                 <span className="font-bold text-warmano-white text-2xl">{price}€</span>
-                                <span className="text-warmano-gray-500 text-sm">{is3Years ? '/3J.' : '/Jahr'}</span>
+                                <span className="text-warmano-gray-400 text-sm">{is3Years ? '/3J.' : '/Jahr'}</span>
                                 {is3Years && (
                                   <p className="text-xs text-green-400">Spare {pkg.price}€</p>
                                 )}
@@ -618,14 +618,15 @@ export default function BookingWidget() {
 
                     {/* Address Section */}
                     <div className="mb-6">
-                      <label className="block text-sm font-semibold text-warmano-gray-300 mb-3">
+                      <span id="address-label" className="block text-sm font-semibold text-warmano-gray-300 mb-3">
                         Adresse der Wärmepumpe
-                      </label>
-                      <div className="space-y-3">
+                      </span>
+                      <div className="space-y-3" role="group" aria-labelledby="address-label">
                         <div className="grid grid-cols-3 gap-3">
                           <input
                             type="text"
                             placeholder="PLZ *"
+                            aria-label="Postleitzahl"
                             value={formData.plz}
                             onChange={(e) => updateForm('plz', e.target.value)}
                             className="input-field bg-warmano-gray-800/50 border-warmano-gray-700/50"
@@ -634,6 +635,7 @@ export default function BookingWidget() {
                           <input
                             type="text"
                             placeholder="Stadt *"
+                            aria-label="Stadt"
                             value={formData.city}
                             onChange={(e) => updateForm('city', e.target.value)}
                             className="input-field col-span-2 bg-warmano-gray-800/50 border-warmano-gray-700/50"
@@ -642,6 +644,7 @@ export default function BookingWidget() {
                         <input
                           type="text"
                           placeholder="Straße und Hausnummer *"
+                          aria-label="Straße und Hausnummer"
                           value={formData.street}
                           onChange={(e) => updateForm('street', e.target.value)}
                           className="input-field bg-warmano-gray-800/50 border-warmano-gray-700/50"
@@ -658,14 +661,15 @@ export default function BookingWidget() {
 
                     {/* Contact Section */}
                     <div className="mb-6">
-                      <label className="block text-sm font-semibold text-warmano-gray-300 mb-3">
+                      <span id="contact-label" className="block text-sm font-semibold text-warmano-gray-300 mb-3">
                         Kontaktdaten
-                      </label>
-                      <div className="space-y-3">
+                      </span>
+                      <div className="space-y-3" role="group" aria-labelledby="contact-label">
                         <div className="grid grid-cols-2 gap-3">
                           <input
                             type="text"
                             placeholder="Vorname *"
+                            aria-label="Vorname"
                             value={formData.firstName}
                             onChange={(e) => updateForm('firstName', e.target.value)}
                             className="input-field bg-warmano-gray-800/50 border-warmano-gray-700/50"
@@ -673,6 +677,7 @@ export default function BookingWidget() {
                           <input
                             type="text"
                             placeholder="Nachname *"
+                            aria-label="Nachname"
                             value={formData.lastName}
                             onChange={(e) => updateForm('lastName', e.target.value)}
                             className="input-field bg-warmano-gray-800/50 border-warmano-gray-700/50"
@@ -681,6 +686,7 @@ export default function BookingWidget() {
                         <input
                           type="email"
                           placeholder="E-Mail-Adresse *"
+                          aria-label="E-Mail-Adresse"
                           value={formData.email}
                           onChange={(e) => updateForm('email', e.target.value)}
                           className="input-field bg-warmano-gray-800/50 border-warmano-gray-700/50"
@@ -688,6 +694,7 @@ export default function BookingWidget() {
                         <input
                           type="tel"
                           placeholder="Telefon *"
+                          aria-label="Telefonnummer"
                           value={formData.phone}
                           onChange={(e) => updateForm('phone', e.target.value)}
                           className="input-field bg-warmano-gray-800/50 border-warmano-gray-700/50"
@@ -855,7 +862,7 @@ export default function BookingWidget() {
                         { icon: CreditCard, text: 'Sichere Zahlung' },
                         { icon: Clock, text: '14 Tage Widerruf' },
                       ].map((item, i) => (
-                        <span key={i} className="flex items-center gap-2 text-xs text-warmano-gray-500">
+                        <span key={i} className="flex items-center gap-2 text-xs text-warmano-gray-400">
                           <div className="w-6 h-6 rounded-md bg-warmano-gray-800/50 flex items-center justify-center">
                             <item.icon className="w-3.5 h-3.5" />
                           </div>

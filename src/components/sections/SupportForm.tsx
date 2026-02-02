@@ -68,7 +68,7 @@ export default function SupportForm() {
               <p className="text-sm text-warmano-gray-400">Ticket-Nummer</p>
               <p className="text-2xl font-bold text-warmano-orange">{ticketNumber}</p>
             </div>
-            <p className="text-sm text-warmano-gray-500">
+            <p className="text-sm text-warmano-gray-400">
               Wir melden uns schnellstmöglich bei Ihnen.
             </p>
           </motion.div>
@@ -96,52 +96,56 @@ export default function SupportForm() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-warmano-gray-300 mb-2">
+                <label htmlFor="support-name" className="block text-sm font-medium text-warmano-gray-300 mb-2">
                   Name *
                 </label>
                 <input
+                  id="support-name"
                   type="text"
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-3 bg-warmano-gray-800 border border-warmano-gray-700 rounded-xl text-white placeholder-warmano-gray-500 focus:outline-none focus:border-warmano-orange transition-colors"
+                  className="w-full px-4 py-3 bg-warmano-gray-800 border border-warmano-gray-700 rounded-xl text-white placeholder-warmano-gray-400 focus:outline-none focus:border-warmano-orange transition-colors"
                   placeholder="Ihr Name"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-warmano-gray-300 mb-2">
+                <label htmlFor="support-email" className="block text-sm font-medium text-warmano-gray-300 mb-2">
                   E-Mail *
                 </label>
                 <input
+                  id="support-email"
                   type="email"
                   required
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-4 py-3 bg-warmano-gray-800 border border-warmano-gray-700 rounded-xl text-white placeholder-warmano-gray-500 focus:outline-none focus:border-warmano-orange transition-colors"
+                  className="w-full px-4 py-3 bg-warmano-gray-800 border border-warmano-gray-700 rounded-xl text-white placeholder-warmano-gray-400 focus:outline-none focus:border-warmano-orange transition-colors"
                   placeholder="ihre@email.de"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-warmano-gray-300 mb-2">
+              <label htmlFor="support-subject" className="block text-sm font-medium text-warmano-gray-300 mb-2">
                 Betreff *
               </label>
               <input
+                id="support-subject"
                 type="text"
                 required
                 value={formData.subject}
                 onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                className="w-full px-4 py-3 bg-warmano-gray-800 border border-warmano-gray-700 rounded-xl text-white placeholder-warmano-gray-500 focus:outline-none focus:border-warmano-orange transition-colors"
+                className="w-full px-4 py-3 bg-warmano-gray-800 border border-warmano-gray-700 rounded-xl text-white placeholder-warmano-gray-400 focus:outline-none focus:border-warmano-orange transition-colors"
                 placeholder="Worum geht es?"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-warmano-gray-300 mb-2">
+              <label htmlFor="support-priority" className="block text-sm font-medium text-warmano-gray-300 mb-2">
                 Priorität
               </label>
               <select
+                id="support-priority"
                 value={formData.priority}
                 onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
                 className="w-full px-4 py-3 bg-warmano-gray-800 border border-warmano-gray-700 rounded-xl text-white focus:outline-none focus:border-warmano-orange transition-colors"
@@ -154,15 +158,16 @@ export default function SupportForm() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-warmano-gray-300 mb-2">
+              <label htmlFor="support-message" className="block text-sm font-medium text-warmano-gray-300 mb-2">
                 Nachricht *
               </label>
               <textarea
+                id="support-message"
                 required
                 rows={5}
                 value={formData.message}
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                className="w-full px-4 py-3 bg-warmano-gray-800 border border-warmano-gray-700 rounded-xl text-white placeholder-warmano-gray-500 focus:outline-none focus:border-warmano-orange transition-colors resize-none"
+                className="w-full px-4 py-3 bg-warmano-gray-800 border border-warmano-gray-700 rounded-xl text-white placeholder-warmano-gray-400 focus:outline-none focus:border-warmano-orange transition-colors resize-none"
                 placeholder="Beschreiben Sie Ihr Anliegen..."
               />
             </div>

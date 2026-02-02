@@ -100,7 +100,7 @@ export default function TrustSection() {
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : {}}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-xs text-warmano-gray-500 uppercase tracking-[0.2em] mb-6 font-medium"
+            className="text-xs text-warmano-gray-400 uppercase tracking-[0.2em] mb-6 font-medium"
           >
             Wir warten alle gängigen Marken
           </motion.p>

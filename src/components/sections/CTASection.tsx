@@ -125,7 +125,7 @@ export default function CTASection() {
                   initial={{ opacity: 0 }}
                   animate={isInView ? { opacity: 1 } : {}}
                   transition={{ duration: 0.6, delay: 0.6 }}
-                  className="flex flex-wrap justify-center gap-x-8 gap-y-3 text-sm text-warmano-gray-500"
+                  className="flex flex-wrap justify-center gap-x-8 gap-y-3 text-sm text-warmano-gray-400"
                 >
                   {[
                     'Ab 249€/Jahr',

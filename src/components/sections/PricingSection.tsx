@@ -191,7 +191,7 @@ export default function PricingSection() {
         >
           {/* Duration Toggle */}
           <div className="flex flex-col items-center gap-2">
-            <span className="text-xs text-warmano-gray-500 uppercase tracking-wider">Vertragslaufzeit</span>
+            <span className="text-xs text-warmano-gray-400 uppercase tracking-wider">Vertragslaufzeit</span>
             <div className="relative flex bg-warmano-gray-900 rounded-xl p-1 border border-warmano-gray-800">
               <button
                 onClick={() => setDuration('1year')}
@@ -235,7 +235,7 @@ export default function PricingSection() {
 
           {/* Payment Frequency Toggle */}
           <div className="flex flex-col items-center gap-2">
-            <span className="text-xs text-warmano-gray-500 uppercase tracking-wider">Zahlweise</span>
+            <span className="text-xs text-warmano-gray-400 uppercase tracking-wider">Zahlweise</span>
             <div className="relative flex bg-warmano-gray-900 rounded-xl p-1 border border-warmano-gray-800">
               <button
                 onClick={() => setFrequency('yearly')}
@@ -424,7 +424,7 @@ function PricingCard({
             }`}>
               {plan.name}
             </div>
-            <p className="text-sm text-warmano-gray-500">{plan.description}</p>
+            <p className="text-sm text-warmano-gray-400">{plan.description}</p>
           </div>
 
           {/* Price */}
@@ -456,7 +456,7 @@ function PricingCard({
                 </div>
 
                 {/* Secondary price info */}
-                <p className="text-sm text-warmano-gray-500 mt-2">
+                <p className="text-sm text-warmano-gray-400 mt-2">
                   {frequency === 'yearly' ? (
                     <>
                       nur <span className="text-warmano-gray-300 font-medium">{pricing.perMonth}€</span> pro Monat
@@ -507,7 +507,7 @@ function PricingCard({
                 <div className="w-5 h-5 rounded-full bg-warmano-gray-800 flex-shrink-0 mt-0.5 flex items-center justify-center">
                   <X className="w-3 h-3 text-warmano-gray-600" />
                 </div>
-                <span className="text-warmano-gray-500 text-sm">{feature}</span>
+                <span className="text-warmano-gray-400 text-sm">{feature}</span>
               </li>
             ))}
           </ul>

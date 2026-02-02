@@ -158,7 +158,7 @@ export default function CookieBanner() {
                           Immer aktiv
                         </span>
                       </div>
-                      <p className="text-sm text-warmano-gray-500">
+                      <p className="text-sm text-warmano-gray-400">
                         Diese Cookies sind für die Grundfunktionen der Website erforderlich und können nicht
                         deaktiviert werden.
                       </p>
@@ -174,7 +174,7 @@ export default function CookieBanner() {
                   <div className="flex items-start justify-between gap-4 p-4 bg-warmano-gray-800/50 rounded-lg">
                     <div className="flex-1">
                       <span className="font-medium text-warmano-white block mb-1">Funktionale Cookies</span>
-                      <p className="text-sm text-warmano-gray-500">
+                      <p className="text-sm text-warmano-gray-400">
                         Diese Cookies ermöglichen erweiterte Funktionen und Personalisierung, z.B. das Speichern
                         Ihrer Einstellungen.
                       </p>
@@ -199,7 +199,7 @@ export default function CookieBanner() {
                   <div className="flex items-start justify-between gap-4 p-4 bg-warmano-gray-800/50 rounded-lg">
                     <div className="flex-1">
                       <span className="font-medium text-warmano-white block mb-1">Analyse-Cookies</span>
-                      <p className="text-sm text-warmano-gray-500">
+                      <p className="text-sm text-warmano-gray-400">
                         Diese Cookies helfen uns zu verstehen, wie Besucher mit der Website interagieren, und
                         ermöglichen uns, sie zu verbessern.
                       </p>
